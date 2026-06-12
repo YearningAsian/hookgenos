@@ -14,19 +14,20 @@ enum Plan {
 }
 
 model User {
-  id                   String          @id @default(cuid())
-  email                String          @unique
+  id                   String               @id @default(cuid())
+  email                String               @unique
   passwordHash         String
   name                 String?
-  plan                 Plan            @default(FREE)
-  hooksGenerated       Int             @default(0)
-  stripeCustomerId     String?         @unique
-  stripeSubscriptionId String?         @unique
-  createdAt            DateTime        @default(now())
-  updatedAt            DateTime        @updatedAt
+  plan                 Plan                 @default(FREE)
+  hooksGenerated       Int                  @default(0)
+  stripeCustomerId     String?              @unique
+  stripeSubscriptionId String?              @unique
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
 
   hooks                GeneratedHook[]
   apiKeys              ApiKey[]
+  passwordResetTokens  PasswordResetToken[]
 
   @@index([email])
   @@index([stripeCustomerId])
@@ -70,6 +71,21 @@ model ApiKey {
   @@map("api_keys")
 }
 
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@map("password_reset_tokens")
+}
+
 model TrendingHook {
   id          String   @id @default(cuid())
   text        String
@@ -84,6 +100,7 @@ model TrendingHook {
   expiresAt   DateTime
   createdAt   DateTime @default(now())
 
+  @@unique([text, platform])
   @@index([platform, isActive])
   @@index([score, isActive])
   @@index([niche, isActive])

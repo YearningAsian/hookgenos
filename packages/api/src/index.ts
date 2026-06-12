@@ -10,6 +10,9 @@ import { authRoutes } from './routes/auth';
 import { hooksRoutes } from './routes/hooks';
 import { billingRoutes } from './routes/billing';
 import { userRoutes } from './routes/user';
+import { adminRoutes } from './routes/admin';
+import { apiKeyRoutes } from './routes/apiKeys';
+import { passwordResetRoutes } from './routes/passwordReset';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -56,9 +59,12 @@ export async function buildApp(): Promise<FastifyInstance> {
   });
 
   await app.register(authRoutes, { prefix: '/api/auth' });
+  await app.register(passwordResetRoutes, { prefix: '/api/auth' });
   await app.register(hooksRoutes, { prefix: '/api/hooks' });
   await app.register(billingRoutes, { prefix: '/api/billing' });
   await app.register(userRoutes, { prefix: '/api/user' });
+  await app.register(apiKeyRoutes, { prefix: '/api/api-keys' });
+  await app.register(adminRoutes, { prefix: '/admin' });
 
   app.get('/health', async () => ({
     status: 'ok',
