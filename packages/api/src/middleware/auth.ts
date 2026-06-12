@@ -2,10 +2,14 @@ import { createHash } from 'node:crypto';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import { prisma } from '../lib/prisma';
 
+function readApiKeyHeader(req: FastifyRequest): string | undefined {
+  const raw = req.headers['x-api-key'];
+  return Array.isArray(raw) ? raw[0] : raw;
+}
+
 export async function authenticate(req: FastifyRequest, reply: FastifyReply) {
   // Accept either httpOnly cookie JWT or X-API-Key header (API key auth).
-  const apiKey = req.headers['x-api-key'] as string | undefined;
-  if (apiKey) {
+  if (readApiKeyHeader(req)) {
     return authenticateApiKey(req, reply);
   }
   try {
@@ -16,7 +20,7 @@ export async function authenticate(req: FastifyRequest, reply: FastifyReply) {
 }
 
 export async function authenticateApiKey(req: FastifyRequest, reply: FastifyReply) {
-  const apiKey = req.headers['x-api-key'] as string | undefined;
+  const apiKey = readApiKeyHeader(req);
   if (!apiKey || !apiKey.startsWith('hk_live_')) {
     return reply.code(401).send({ error: 'Unauthorized' });
   }

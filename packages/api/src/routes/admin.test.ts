@@ -67,6 +67,30 @@ describe('Admin routes', () => {
     expect(res.statusCode).toBe(401);
   });
 
+  it('rejects a token that is a prefix of the real token (constant-time)', async () => {
+    const res = await app.inject({
+      method: 'POST', url: '/admin/trending',
+      headers: { 'x-admin-token': ADMIN_TOKEN.slice(0, ADMIN_TOKEN.length - 1) },
+      payload: { hooks: [makeHook()] },
+    });
+    expect(res.statusCode).toBe(401);
+  });
+
+  it('fails closed when no admin token is configured on the server', async () => {
+    const saved = process.env.ADMIN_API_TOKEN;
+    delete process.env.ADMIN_API_TOKEN;
+    try {
+      const res = await app.inject({
+        method: 'POST', url: '/admin/trending',
+        headers: { 'x-admin-token': 'anything' },
+        payload: { hooks: [makeHook()] },
+      });
+      expect(res.statusCode).toBe(401);
+    } finally {
+      process.env.ADMIN_API_TOKEN = saved;
+    }
+  });
+
   // ── POST /admin/trending ────────────────────────────────────────────────────
   it('creates trending hooks with valid payload', async () => {
     const res = await app.inject({

@@ -1,4 +1,4 @@
-import './lib/env';
+import { validateEnv } from './lib/env';
 import Fastify, { type FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
@@ -15,6 +15,20 @@ import { apiKeyRoutes } from './routes/apiKeys';
 import { passwordResetRoutes } from './routes/passwordReset';
 
 export async function buildApp(): Promise<FastifyInstance> {
+  // Validate security-critical configuration before doing anything else.
+  // In production a misconfiguration is fatal; in dev we only warn.
+  const envErrors = validateEnv();
+  if (envErrors.length > 0) {
+    if (process.env.NODE_ENV === 'production') {
+      console.error('FATAL: insecure configuration. Refusing to start:');
+      for (const e of envErrors) console.error(`  - ${e}`);
+      process.exit(1);
+    }
+    for (const e of envErrors) {
+      console.warn(`WARNING: ${e} (would be fatal in production)`);
+    }
+  }
+
   const app = Fastify({
     logger: {
       level: process.env.NODE_ENV === 'production' ? 'warn' : 'info',
@@ -42,16 +56,11 @@ export async function buildApp(): Promise<FastifyInstance> {
   // Cookie plugin must be registered before JWT so jwt can read cookies.
   await app.register(cookie);
 
-  const jwtSecret = process.env.JWT_SECRET;
-  if (!jwtSecret) {
-    if (process.env.NODE_ENV === 'production') {
-      console.error('FATAL: JWT_SECRET is not set in production. Refusing to start.');
-      process.exit(1);
-    }
-    console.warn('WARNING: JWT_SECRET not set — using insecure dev default. Set JWT_SECRET before deploying.');
-  }
+  // In production validateEnv() above guarantees a strong JWT_SECRET; the
+  // dev-only default keeps local boot working without a provisioned secret.
+  const jwtSecret = process.env.JWT_SECRET || 'dev-secret-CHANGE-IN-PRODUCTION';
   await app.register(jwt, {
-    secret: jwtSecret || 'dev-secret-CHANGE-IN-PRODUCTION',
+    secret: jwtSecret,
     cookie: {
       cookieName: 'hg_auth',
       signed: false,
