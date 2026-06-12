@@ -2,11 +2,9 @@
   <h1>⚡ HookGenOS</h1>
   <p><strong>Open-source viral hook generator for TikTok, Instagram, YouTube, LinkedIn & more</strong></p>
   <p>
-    <a href="https://hookgenos.dev">Live Demo</a> ·
     <a href="#quick-start-self-hosted">Self-Host Guide</a> ·
     <a href="CONTRIBUTING.md">Contributing</a>
   </p>
-  <img src="https://hookgenos.dev/og-screenshot.png" alt="HookGenOS — hook generator interface screenshot" />
 </div>
 
 ---
@@ -56,22 +54,18 @@ The fastest path to a running instance. Docker Compose starts PostgreSQL, the AP
 git clone https://github.com/YearningAsian/hookgenos
 cd hookgenos
 cp .env.example .env
-# Edit .env — set JWT_SECRET, NEXTAUTH_SECRET, and any optional keys
+# Edit .env — set JWT_SECRET and any optional keys
 docker compose up -d
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
 
+Database migrations run automatically when the API container starts (see `docker/entrypoint.sh`).
+
 To follow logs:
 
 ```bash
 docker compose logs -f
-```
-
-To run database migrations after the first boot:
-
-```bash
-docker compose exec api pnpm db:migrate
 ```
 
 ---
@@ -91,7 +85,6 @@ Open `.env` and set at minimum:
 
 - `DATABASE_URL`
 - `JWT_SECRET`
-- `NEXTAUTH_SECRET`
 
 Then:
 
@@ -117,8 +110,7 @@ Copy `.env.example` to `.env` and fill in the values below. Variables marked **R
 |---|---|---|
 | `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:pass@localhost:5432/hookgenos` |
 | `JWT_SECRET` | Secret for signing auth tokens — generate with `openssl rand -hex 32` | `a1b2c3...` |
-| `NEXTAUTH_SECRET` | Secret for NextAuth session encryption — generate with `openssl rand -hex 32` | `d4e5f6...` |
-| `NEXTAUTH_URL` | Canonical URL of your frontend | `http://localhost:3000` |
+| `APP_URL` | Canonical URL of your frontend (used for CORS and Stripe redirects) | `http://localhost:3000` |
 | `NEXT_PUBLIC_API_URL` | URL the frontend uses to reach the API | `http://localhost:3001` |
 
 ### OpenAI (Optional — enables AI hooks)
@@ -166,15 +158,15 @@ HookGenOS ships with an optional Stripe integration that powers a Pro tier at $9
 4. **Register your webhook endpoint:**
    - Go to **Developers → Webhooks → Add endpoint**.
    - Set the endpoint URL to: `https://yourdomain.com/api/billing/webhook`
-   - Select these events: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_failed`
+   - Select these events: `checkout.session.completed`, `customer.subscription.deleted`, `customer.subscription.paused`
    - Copy the **Signing secret** (`whsec_...`) into `STRIPE_WEBHOOK_SECRET`.
 
-5. **Restart the API** — billing routes activate automatically when all four Stripe variables are present.
+5. **Restart the API** — billing routes activate automatically when the Stripe variables are present.
 
 For local development, use [Stripe CLI](https://stripe.com/docs/stripe-cli) to forward webhooks:
 
 ```bash
-stripe listen --forward-to localhost:4000/api/billing/webhook
+stripe listen --forward-to localhost:3001/api/billing/webhook
 ```
 
 ---
@@ -208,7 +200,7 @@ hookgenos/
 
 **`packages/database`** owns the Prisma schema and exports a pre-configured `PrismaClient` instance. Migrations live here. Both the API and any scripts import from this package — there is one source of truth for the data model.
 
-**`packages/app`** is a Next.js 14 app with the App Router. It communicates with the API via `API_URL` and uses NextAuth for session management. The UI is built with Tailwind CSS and ships a dark theme by default.
+**`packages/app`** is a Next.js 14 app with the App Router. It communicates with the API via `NEXT_PUBLIC_API_URL` and stores the API-issued JWT client-side for session management. The UI is built with Tailwind CSS and ships a dark theme by default.
 
 ### Request flow
 

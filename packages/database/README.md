@@ -10,9 +10,10 @@ Prisma schema, migrations, and typed `PrismaClient` for HookGenOS. All other pac
 packages/database/
 ├── prisma/
 │   ├── schema.prisma   # The single source of truth for all tables
-│   └── migrations/     # Auto-generated SQL migration history
+│   ├── migrations/     # SQL migration history (0_init is the baseline)
+│   └── seed.ts         # Sample-data seed script
 ├── src/
-│   └── index.ts        # Exports a pre-configured PrismaClient instance
+│   └── index.ts        # Re-exports PrismaClient + model types
 └── package.json
 ```
 
@@ -34,34 +35,20 @@ This runs `prisma migrate dev` from the repo root. It applies any unapplied migr
 pnpm db:migrate:deploy
 ```
 
-This runs `prisma migrate deploy`, which applies migrations without prompting and does not regenerate the client. Use this in Docker entrypoints and CI pipelines.
+This runs `prisma migrate deploy`, which applies migrations without prompting and does not regenerate the client. The Docker API container runs this automatically on start (see `docker/entrypoint.sh`).
 
 ### Create a new migration after editing the schema
 
 1. Edit `prisma/schema.prisma` to reflect your intended change.
-2. Run:
+2. Run `pnpm db:migrate`.
 
-```bash
-pnpm db:migrate
-```
-
-Prisma compares your schema to the current database state, generates the SQL diff, writes it to `prisma/migrations/<timestamp>_<name>/migration.sql`, and applies it.
-
-Name your migration descriptively when prompted — for example: `add_hook_favorites_table`, `add_stripe_customer_id_to_user`.
-
-### Reset the database (destructive — development only)
-
-```bash
-pnpm db:reset
-```
-
-Drops the database, re-applies all migrations from scratch, and optionally runs the seed script. **Do not run this in production.**
+Prisma compares your schema to the current database state, generates the SQL diff, writes it to `prisma/migrations/<timestamp>_<name>/migration.sql`, and applies it. Name your migration descriptively when prompted — for example: `add_hook_favorites`, `add_stripe_customer_id_to_user`.
 
 ---
 
 ## Seeding
 
-The seed script populates the database with enough sample data to work with the app locally — a test user, a handful of generated hooks, and a sample favorites list.
+The seed script populates the database with enough sample data to work with the app locally — a demo user and a handful of generated hooks.
 
 ```bash
 pnpm db:seed
@@ -69,13 +56,13 @@ pnpm db:seed
 
 The seed script lives at `prisma/seed.ts`. Edit it to add domain-specific fixtures.
 
-Test user credentials created by the seed:
+Demo user credentials created by the seed (local development only — do not run the seed against a production database):
 
 | Field | Value |
 |---|---|
-| Email | `test@hookgenos.dev` |
+| Email | `demo@hookgenos.com` |
 | Password | `password123` |
-| Plan | `free` |
+| Plan | `FREE` |
 
 ---
 
@@ -93,15 +80,13 @@ Opens at [http://localhost:5555](http://localhost:5555).
 
 ## Importing the Client
 
-Other packages in the monorepo import the shared client directly:
+Other packages in the monorepo import from this package:
 
 ```typescript
-import { prisma } from '@hookgenos/database';
-
-const user = await prisma.user.findUnique({ where: { id } });
+import { PrismaClient } from '@hookgenos/database';
 ```
 
-The `src/index.ts` file instantiates `PrismaClient` once with connection pooling configured and exports it as a named export. Do not instantiate `PrismaClient` directly in other packages.
+The API wraps this in a singleton at `packages/api/src/lib/prisma.ts` — import `prisma` from there inside the API rather than instantiating a new client per module.
 
 ---
 
@@ -109,14 +94,12 @@ The `src/index.ts` file instantiates `PrismaClient` once with connection pooling
 
 | Table | Purpose |
 |---|---|
-| `User` | Accounts — email, hashed password, plan tier, Stripe customer ID |
-| `Session` | JWT refresh token tracking and invalidation |
-| `Hook` | Every generated hook — content, platform, tone, topic, timestamp |
-| `Favorite` | Join table between `User` and `Hook` for starred hooks |
-| `UsageRecord` | Per-day generation counts used for free tier rate limiting |
-| `Subscription` | Stripe subscription state — plan, status, current period end |
+| `users` | Accounts — email, bcrypt password hash, plan tier, Stripe customer/subscription IDs |
+| `generated_hooks` | Every generated hook — content, platform, tone, topic, type, score, favorite flag |
+| `api_keys` | Hashed API keys per user (reserved for future public-API use) |
+| `trending_hooks` | Curated/imported trending hooks shown on the Trending tab, with expiry |
 
-For the full column-level detail, read `prisma/schema.prisma` directly — it is the authoritative reference and is kept up to date with every migration.
+For the full column-level detail, read `prisma/schema.prisma` directly — it is the authoritative reference.
 
 ---
 
@@ -126,10 +109,9 @@ For the full column-level detail, read `prisma/schema.prisma` directly — it is
 |---|---|
 | `pnpm db:migrate` | Apply pending migrations (dev) |
 | `pnpm db:migrate:deploy` | Apply pending migrations (production/CI) |
-| `pnpm db:reset` | Drop and recreate the database (dev only) |
 | `pnpm db:seed` | Seed with sample data |
 | `pnpm db:studio` | Open Prisma Studio at localhost:5555 |
 | `pnpm db:generate` | Regenerate the Prisma client without running migrations |
 | `pnpm db:push` | Push schema changes without creating a migration (prototyping only) |
 
-All of these are aliases defined in the root `package.json` and delegate to the appropriate `prisma` CLI command scoped to this package's schema path.
+All of these are aliases defined in the root `package.json` and delegate to scripts in this package.
