@@ -225,6 +225,72 @@ describe('generateHooks() AI path', () => {
     expect(hooks[1].score).toBe(0);
   });
 
+  it('falls back to templates when the model returns literal null content', async () => {
+    // Regression: JSON.parse('null') => null; accessing parsed.hooks used to throw.
+    process.env.OPENAI_API_KEY = 'sk-test';
+    const create = vi.fn().mockResolvedValue({
+      choices: [{ message: { content: 'null' } }],
+    });
+    vi.doMock('openai', () => ({
+      default: class {
+        chat = { completions: { create } };
+      },
+    }));
+
+    const { generateHooks: gen } = await import('../generator');
+    const hooks = await gen(makeOpts({ useAI: true, count: 3 }));
+    // No usable AI hooks → template fallback returns the requested count.
+    expect(hooks).toHaveLength(3);
+    for (const h of hooks) expect(h.text.length).toBeGreaterThan(0);
+  });
+
+  it('coerces a string score and defaults an unparseable one', async () => {
+    process.env.OPENAI_API_KEY = 'sk-test';
+    const create = vi.fn().mockResolvedValue({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              hooks: [
+                { text: 'numeric string score', score: '73' }, // → 73
+                { text: 'garbage score', score: 'high' }, // NaN → default 80
+              ],
+            }),
+          },
+        },
+      ],
+    });
+    vi.doMock('openai', () => ({
+      default: class {
+        chat = { completions: { create } };
+      },
+    }));
+
+    const { generateHooks: gen } = await import('../generator');
+    const hooks = await gen(makeOpts({ useAI: true, count: 2 }));
+    expect(hooks).toHaveLength(2);
+    expect(hooks[0].score).toBe(73);
+    expect(hooks[1].score).toBe(80);
+  });
+
+  it('accepts a top-level array response shape', async () => {
+    process.env.OPENAI_API_KEY = 'sk-test';
+    const create = vi.fn().mockResolvedValue({
+      choices: [{ message: { content: JSON.stringify([{ text: 'bare array hook', score: 88 }]) } }],
+    });
+    vi.doMock('openai', () => ({
+      default: class {
+        chat = { completions: { create } };
+      },
+    }));
+
+    const { generateHooks: gen } = await import('../generator');
+    const hooks = await gen(makeOpts({ useAI: true, count: 1 }));
+    expect(hooks).toHaveLength(1);
+    expect(hooks[0].text).toBe('bare array hook');
+    expect(hooks[0].score).toBe(88);
+  });
+
   it('falls back to template generation when OpenAI throws', async () => {
     process.env.OPENAI_API_KEY = 'sk-test';
     const create = vi.fn().mockRejectedValue(new Error('rate limited'));
