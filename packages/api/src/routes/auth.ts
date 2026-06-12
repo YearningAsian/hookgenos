@@ -18,6 +18,14 @@ const loginSchema = z.object({
 // Tight rate limits for auth endpoints to prevent brute-force and enumeration
 const AUTH_RATE_LIMIT = { config: { rateLimit: { max: 10, timeWindow: '1 minute' } } };
 
+const COOKIE_OPTS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax' as const,
+  path: '/',
+  maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+};
+
 export async function authRoutes(app: FastifyInstance) {
   app.post('/register', AUTH_RATE_LIMIT, async (req, reply) => {
     try {
@@ -36,7 +44,8 @@ export async function authRoutes(app: FastifyInstance) {
         select: { id: true, email: true, name: true, plan: true, createdAt: true },
       });
       const token = app.jwt.sign({ sub: user.id, email: user.email }, { expiresIn: '7d' });
-      return reply.code(201).send({ user, token });
+      reply.setCookie('hg_auth', token, COOKIE_OPTS);
+      return reply.code(201).send({ user });
     } catch (err) {
       if (err instanceof z.ZodError) {
         return reply.code(400).send({ error: 'Validation error', details: err.issues });
@@ -53,9 +62,9 @@ export async function authRoutes(app: FastifyInstance) {
       const valid = await bcrypt.compare(body.password, user.passwordHash);
       if (!valid) return reply.code(401).send({ error: 'Invalid credentials' });
       const token = app.jwt.sign({ sub: user.id, email: user.email }, { expiresIn: '7d' });
+      reply.setCookie('hg_auth', token, COOKIE_OPTS);
       return {
         user: { id: user.id, email: user.email, name: user.name, plan: user.plan },
-        token,
       };
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -63,6 +72,11 @@ export async function authRoutes(app: FastifyInstance) {
       }
       throw err;
     }
+  });
+
+  app.post('/logout', async (req, reply) => {
+    reply.clearCookie('hg_auth', { path: '/' });
+    return reply.code(204).send();
   });
 
   app.get('/me', { preHandler: [authenticate] }, async (req, reply) => {

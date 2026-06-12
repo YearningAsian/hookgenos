@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { randomBytes } from 'node:crypto';
 import { PrismaClient } from '../src/generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import bcrypt from 'bcryptjs';
@@ -6,11 +7,37 @@ import bcrypt from 'bcryptjs';
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL ?? '' });
 const prisma = new PrismaClient({ adapter });
 
+/**
+ * Resolve the demo user's password.
+ *
+ * The static `password123` default is convenient for local dev but must never
+ * be planted in a production database. Outside of development we require an
+ * explicit `SEED_DEMO_PASSWORD`, or otherwise generate a strong random one and
+ * print it once so the operator can use it. The static dev default is only ever
+ * used when NODE_ENV is not "production".
+ */
+export function resolveDemoPassword(
+  env: { NODE_ENV?: string; SEED_DEMO_PASSWORD?: string } = process.env,
+): { password: string; generated: boolean } {
+  if (env.SEED_DEMO_PASSWORD) {
+    return { password: env.SEED_DEMO_PASSWORD, generated: false };
+  }
+  if (env.NODE_ENV === 'production') {
+    // No static fallback in production — generate a strong random password.
+    return { password: randomBytes(18).toString('base64url'), generated: true };
+  }
+  return { password: 'password123', generated: false };
+}
+
 async function main() {
   console.log('Seeding database...');
 
   // Create demo user
-  const hashed = await bcrypt.hash('password123', 12);
+  const { password, generated } = resolveDemoPassword();
+  if (generated) {
+    console.log(`Generated demo password (save this — shown once): ${password}`);
+  }
+  const hashed = await bcrypt.hash(password, 12);
   const user = await prisma.user.upsert({
     where: { email: 'demo@hookgenos.com' },
     update: {},

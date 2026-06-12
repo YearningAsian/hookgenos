@@ -1,10 +1,11 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Zap, Menu, X, LogOut, LayoutDashboard } from 'lucide-react';
+import { Zap, Menu, X, LogOut, LayoutDashboard, Settings } from 'lucide-react';
 import { GithubIcon } from '@/components/ui/github-icon';
 import { Button } from './ui/button';
-import { fetchCurrentUser, clearToken } from '@/lib/auth';
+import { fetchCurrentUser } from '@/lib/auth';
+import { api } from '@/lib/api';
 import type { User } from '@/lib/api';
 
 export function Navbar() {
@@ -15,8 +16,8 @@ export function Navbar() {
     fetchCurrentUser().then(setUser);
   }, []);
 
-  const logout = () => {
-    clearToken();
+  const logout = async () => {
+    try { await api.auth.logout(); } catch {}
     setUser(null);
     window.location.href = '/';
   };
@@ -48,6 +49,9 @@ export function Navbar() {
                   <LayoutDashboard className="h-3.5 w-3.5" />Dashboard
                 </Button>
               </Link>
+              <Link href="/settings" className="p-2 text-zinc-500 hover:text-zinc-300 transition-colors" title="Settings">
+                <Settings className="h-4 w-4" />
+              </Link>
               <button onClick={logout} className="p-2 text-zinc-500 hover:text-zinc-300 transition-colors">
                 <LogOut className="h-4 w-4" />
               </button>
@@ -71,7 +75,10 @@ export function Navbar() {
           <Link href="/pricing" className="block px-3 py-2 text-sm text-zinc-400">Pricing</Link>
           <a href={process.env.NEXT_PUBLIC_GITHUB_URL || 'https://github.com/YearningAsian/hookgenos'} target="_blank" rel="noopener noreferrer" className="block px-3 py-2 text-sm text-zinc-400">GitHub</a>
           {user ? (
-            <Link href="/dashboard" className="block px-3 py-2 text-sm text-zinc-100">Dashboard</Link>
+            <>
+              <Link href="/dashboard" className="block px-3 py-2 text-sm text-zinc-100">Dashboard</Link>
+              <Link href="/settings" className="block px-3 py-2 text-sm text-zinc-400">Settings</Link>
+            </>
           ) : (
             <div className="flex gap-2 pt-2">
               <Link href="/login" className="flex-1"><Button variant="outline" className="w-full">Sign in</Button></Link>

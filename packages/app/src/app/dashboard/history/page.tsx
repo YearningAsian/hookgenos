@@ -8,16 +8,9 @@ import { cn } from '@/lib/utils';
 import { api, type GeneratedHook } from '@/lib/api';
 import { fetchCurrentUser as fetchUser } from '@/lib/auth';
 import Link from 'next/link';
+import { PLATFORMS as BASE_PLATFORMS } from '@/lib/constants';
 
-const PLATFORMS = [
-  { id: '', label: 'All platforms' },
-  { id: 'tiktok', label: 'TikTok' },
-  { id: 'instagram', label: 'Instagram' },
-  { id: 'youtube', label: 'YouTube' },
-  { id: 'twitter', label: 'Twitter/X' },
-  { id: 'linkedin', label: 'LinkedIn' },
-  { id: 'general', label: 'General' },
-];
+const PLATFORMS = [{ id: '', label: 'All platforms' }, ...BASE_PLATFORMS];
 
 export default function HistoryPage() {
   const router = useRouter();

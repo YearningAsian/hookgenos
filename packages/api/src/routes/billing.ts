@@ -19,7 +19,7 @@ export async function billingRoutes(app: FastifyInstance) {
     const sig = req.headers['stripe-signature'] as string;
 
     // rawBody is set by @fastify/rawbody — required for Stripe signature verification
-    const rawPayload = (req as any).rawBody;
+    const rawPayload = req.rawBody;
     if (!rawPayload) return reply.code(400).send({ error: 'Missing raw body' });
 
     // Type inferred from constructEvent — Stripe.Event is a discriminated

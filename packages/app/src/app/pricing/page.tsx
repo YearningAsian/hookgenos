@@ -5,7 +5,6 @@ import { Check, Zap, AlertCircle } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api';
-import { getToken } from '@/lib/auth';
 
 export default function PricingPage() {
   const [loading, setLoading] = useState(false);
@@ -13,12 +12,15 @@ export default function PricingPage() {
 
   const startCheckout = async () => {
     setError('');
-    if (!getToken()) { window.location.href = '/register?next=/pricing'; return; }
     setLoading(true);
     try {
       const { url } = await api.billing.createCheckout();
       window.location.href = url!;
     } catch (err: any) {
+      if (err.status === 401) {
+        window.location.href = '/register?next=/pricing';
+        return;
+      }
       setError(err.message || 'Failed to start checkout. Please try again.');
     } finally {
       setLoading(false);

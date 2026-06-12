@@ -1,7 +1,8 @@
 import './lib/env';
-import Fastify from 'fastify';
+import Fastify, { type FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
+import cookie from '@fastify/cookie';
 import jwt from '@fastify/jwt';
 import rateLimit from '@fastify/rate-limit';
 import rawBody from 'fastify-raw-body';
@@ -10,16 +11,15 @@ import { hooksRoutes } from './routes/hooks';
 import { billingRoutes } from './routes/billing';
 import { userRoutes } from './routes/user';
 
-const app = Fastify({
-  logger: {
-    level: process.env.NODE_ENV === 'production' ? 'warn' : 'info',
-  },
-});
+export async function buildApp(): Promise<FastifyInstance> {
+  const app = Fastify({
+    logger: {
+      level: process.env.NODE_ENV === 'production' ? 'warn' : 'info',
+    },
+  });
 
-async function start() {
   // Must be registered before content type parsers / routes.
-  // global:false — only routes that opt in via `config: { rawBody: true }`
-  // (the Stripe webhook) pay the cost of buffering the raw payload.
+  // global:false — only routes that opt in via `config: { rawBody: true }` pay the cost.
   await app.register(rawBody, {
     field: 'rawBody',
     global: false,
@@ -35,6 +35,10 @@ async function start() {
     max: 200,
     timeWindow: '1 minute',
   });
+
+  // Cookie plugin must be registered before JWT so jwt can read cookies.
+  await app.register(cookie);
+
   const jwtSecret = process.env.JWT_SECRET;
   if (!jwtSecret) {
     if (process.env.NODE_ENV === 'production') {
@@ -45,6 +49,10 @@ async function start() {
   }
   await app.register(jwt, {
     secret: jwtSecret || 'dev-secret-CHANGE-IN-PRODUCTION',
+    cookie: {
+      cookieName: 'hg_auth',
+      signed: false,
+    },
   });
 
   await app.register(authRoutes, { prefix: '/api/auth' });
@@ -58,11 +66,20 @@ async function start() {
     timestamp: new Date().toISOString(),
   }));
 
+  return app;
+}
+
+async function start() {
+  const app = await buildApp();
   const port = parseInt(process.env.PORT || '3001', 10);
   await app.listen({ port, host: '0.0.0.0' });
 }
 
-start().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+// Only start listening when this file is the process entry point.
+// When imported by tests or other modules, skip the listen call.
+if (require.main === module) {
+  start().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}

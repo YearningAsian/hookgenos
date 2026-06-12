@@ -6,7 +6,7 @@ import { Zap, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { api } from '@/lib/api';
-import { saveToken, safeNextPath } from '@/lib/auth';
+import { safeNextPath } from '@/lib/auth';
 
 function LoginForm() {
   const router = useRouter();
@@ -23,8 +23,7 @@ function LoginForm() {
     setError('');
     setLoading(true);
     try {
-      const { token } = await api.auth.login({ email, password });
-      saveToken(token);
+      await api.auth.login({ email, password });
       router.push(next);
     } catch (err: any) {
       setError(err.message || 'Login failed');

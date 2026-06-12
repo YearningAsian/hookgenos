@@ -6,7 +6,7 @@ import { Zap, Loader2, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { api } from '@/lib/api';
-import { saveToken, safeNextPath } from '@/lib/auth';
+import { safeNextPath } from '@/lib/auth';
 
 function RegisterForm() {
   const router = useRouter();
@@ -25,8 +25,7 @@ function RegisterForm() {
     if (password.length < 8) { setError('Password must be at least 8 characters'); return; }
     setLoading(true);
     try {
-      const { token } = await api.auth.register({ email, password, name: name || undefined });
-      saveToken(token);
+      await api.auth.register({ email, password, name: name || undefined });
       router.push(next);
     } catch (err: any) {
       setError(err.message || 'Registration failed');

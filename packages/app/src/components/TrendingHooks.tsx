@@ -3,34 +3,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { TrendingUp, Copy, Check, Zap, Lock, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { api, type TrendingHook } from '@/lib/api';
+import { PLATFORMS as BASE_PLATFORMS, TYPE_COLORS, SOURCE_ICONS } from '@/lib/constants';
 
-const PLATFORMS = [
-  { id: '', label: 'All' },
-  { id: 'tiktok', label: 'TikTok' },
-  { id: 'instagram', label: 'Instagram' },
-  { id: 'youtube', label: 'YouTube' },
-  { id: 'twitter', label: 'Twitter/X' },
-  { id: 'linkedin', label: 'LinkedIn' },
-];
-
-const SOURCE_ICONS: Record<string, string> = {
-  youtube: '▶',
-  reddit: '⬆',
-  twitter: '𝕏',
-  manual: '✦',
-};
-
-const TYPE_COLORS: Record<string, string> = {
-  curiosity: 'bg-blue-900/40 text-blue-300 border-blue-800',
-  fear_fomo: 'bg-red-900/40 text-red-300 border-red-800',
-  contrarian: 'bg-orange-900/40 text-orange-300 border-orange-800',
-  pain_point: 'bg-yellow-900/40 text-yellow-300 border-yellow-800',
-  how_to: 'bg-green-900/40 text-green-300 border-green-800',
-  list: 'bg-cyan-900/40 text-cyan-300 border-cyan-800',
-  shocking_stat: 'bg-pink-900/40 text-pink-300 border-pink-800',
-  story: 'bg-purple-900/40 text-purple-300 border-purple-800',
-  question: 'bg-indigo-900/40 text-indigo-300 border-indigo-800',
-};
+// Filter UI excludes 'general' and adds an "All" option
+const PLATFORMS = [{ id: '', label: 'All' }, ...BASE_PLATFORMS.filter(p => p.id !== 'general')];
 
 interface TrendingHooksProps {
   isPro: boolean;

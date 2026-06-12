@@ -8,23 +8,7 @@ import { HookCard } from './HookCard';
 import { cn } from '@/lib/utils';
 import { api, type GeneratedHook } from '@/lib/api';
 import { useToast } from './ui/toast';
-
-const PLATFORMS = [
-  { id: 'tiktok', label: 'TikTok' },
-  { id: 'instagram', label: 'Instagram' },
-  { id: 'youtube', label: 'YouTube' },
-  { id: 'twitter', label: 'Twitter/X' },
-  { id: 'linkedin', label: 'LinkedIn' },
-  { id: 'general', label: 'General' },
-];
-
-const TONES = [
-  { id: 'casual', label: 'Casual' },
-  { id: 'bold', label: 'Bold' },
-  { id: 'curious', label: 'Curious' },
-  { id: 'urgent', label: 'Urgent' },
-  { id: 'professional', label: 'Professional' },
-];
+import { PLATFORMS, TONES } from '@/lib/constants';
 
 interface HookGeneratorProps {
   isPro?: boolean;

@@ -1,17 +1,11 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-function getToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('hg_token');
-}
-
 export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const token = getToken();
   const res = await fetch(`${API_URL}${path}`, {
     ...options,
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },
   });
@@ -26,10 +20,11 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
 export const api = {
   auth: {
     register: (body: { email: string; password: string; name?: string }) =>
-      apiFetch<{ user: User; token: string }>('/api/auth/register', { method: 'POST', body: JSON.stringify(body) }),
+      apiFetch<{ user: User }>('/api/auth/register', { method: 'POST', body: JSON.stringify(body) }),
     login: (body: { email: string; password: string }) =>
-      apiFetch<{ user: User; token: string }>('/api/auth/login', { method: 'POST', body: JSON.stringify(body) }),
+      apiFetch<{ user: User }>('/api/auth/login', { method: 'POST', body: JSON.stringify(body) }),
     me: () => apiFetch<User>('/api/auth/me'),
+    logout: () => apiFetch<void>('/api/auth/logout', { method: 'POST' }),
   },
   hooks: {
     generate: (body: GenerateRequest) =>
@@ -54,6 +49,12 @@ export const api = {
   billing: {
     createCheckout: () => apiFetch<{ url: string }>('/api/billing/create-checkout', { method: 'POST' }),
     createPortal: () => apiFetch<{ url: string }>('/api/billing/create-portal', { method: 'POST' }),
+  },
+  user: {
+    me: () => apiFetch<User>('/api/user'),
+    update: (body: { name?: string }) =>
+      apiFetch<User>('/api/user', { method: 'PATCH', body: JSON.stringify(body) }),
+    delete: () => apiFetch<void>('/api/user', { method: 'DELETE' }),
   },
 };
 
