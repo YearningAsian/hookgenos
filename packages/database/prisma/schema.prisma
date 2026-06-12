@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Plan {
+  FREE
+  PRO
+}
+
+model User {
+  id                   String          @id @default(cuid())
+  email                String          @unique
+  passwordHash         String
+  name                 String?
+  plan                 Plan            @default(FREE)
+  hooksGenerated       Int             @default(0)
+  stripeCustomerId     String?         @unique
+  stripeSubscriptionId String?         @unique
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+
+  hooks                GeneratedHook[]
+  apiKeys              ApiKey[]
+
+  @@index([email])
+  @@index([stripeCustomerId])
+  @@map("users")
+}
+
+model GeneratedHook {
+  id         String   @id @default(cuid())
+  userId     String
+  content    String
+  platform   String
+  niche      String?
+  tone       String
+  topic      String
+  hookType   String
+  score      Int      @default(0)
+  isFavorite Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, createdAt])
+  @@index([userId, isFavorite])
+  @@map("generated_hooks")
+}
+
+model ApiKey {
+  id        String    @id @default(cuid())
+  userId    String
+  name      String
+  keyHash   String    @unique
+  lastUsed  DateTime?
+  createdAt DateTime  @default(now())
+  expiresAt DateTime?
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([keyHash])
+  @@map("api_keys")
+}
+
+model TrendingHook {
+  id          String   @id @default(cuid())
+  text        String
+  platform    String
+  hookType    String
+  score       Int      @default(0)
+  niche       String?
+  sourceType  String   // 'youtube' | 'reddit' | 'twitter' | 'manual'
+  viewCount   BigInt?
+  explanation String?
+  isActive    Boolean  @default(true)
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+
+  @@index([platform, isActive])
+  @@index([score, isActive])
+  @@index([niche, isActive])
+  @@index([expiresAt])
+  @@map("trending_hooks")
+}

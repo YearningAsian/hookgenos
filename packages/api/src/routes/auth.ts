@@ -1,0 +1,77 @@
+import type { FastifyInstance } from 'fastify';
+import bcrypt from 'bcryptjs';
+import { z } from 'zod';
+import { prisma } from '../lib/prisma';
+import { authenticate } from '../middleware/auth';
+
+const registerSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8, 'Password must be at least 8 characters').max(72, 'Password must be at most 72 characters'),
+  name: z.string().min(1).max(100).optional(),
+});
+
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
+});
+
+// Tight rate limits for auth endpoints to prevent brute-force and enumeration
+const AUTH_RATE_LIMIT = { config: { rateLimit: { max: 10, timeWindow: '1 minute' } } };
+
+export async function authRoutes(app: FastifyInstance) {
+  app.post('/register', AUTH_RATE_LIMIT, async (req, reply) => {
+    try {
+      const body = registerSchema.parse(req.body);
+      const existing = await prisma.user.findUnique({ where: { email: body.email } });
+      if (existing) {
+        return reply.code(409).send({ error: 'Email already registered' });
+      }
+      const hashed = await bcrypt.hash(body.password, 12);
+      const user = await prisma.user.create({
+        data: {
+          email: body.email,
+          passwordHash: hashed,
+          name: body.name ?? null,
+        },
+        select: { id: true, email: true, name: true, plan: true, createdAt: true },
+      });
+      const token = app.jwt.sign({ sub: user.id, email: user.email }, { expiresIn: '7d' });
+      return reply.code(201).send({ user, token });
+    } catch (err) {
+      if (err instanceof Error && err.name === 'ZodError') {
+        return reply.code(400).send({ error: 'Validation error', details: (err as any).errors });
+      }
+      throw err;
+    }
+  });
+
+  app.post('/login', AUTH_RATE_LIMIT, async (req, reply) => {
+    try {
+      const body = loginSchema.parse(req.body);
+      const user = await prisma.user.findUnique({ where: { email: body.email } });
+      if (!user) return reply.code(401).send({ error: 'Invalid credentials' });
+      const valid = await bcrypt.compare(body.password, user.passwordHash);
+      if (!valid) return reply.code(401).send({ error: 'Invalid credentials' });
+      const token = app.jwt.sign({ sub: user.id, email: user.email }, { expiresIn: '7d' });
+      return {
+        user: { id: user.id, email: user.email, name: user.name, plan: user.plan },
+        token,
+      };
+    } catch (err) {
+      if (err instanceof Error && err.name === 'ZodError') {
+        return reply.code(400).send({ error: 'Validation error', details: (err as any).errors });
+      }
+      throw err;
+    }
+  });
+
+  app.get('/me', { preHandler: [authenticate] }, async (req, reply) => {
+    const payload = req.user as { sub: string };
+    const user = await prisma.user.findUnique({
+      where: { id: payload.sub },
+      select: { id: true, email: true, name: true, plan: true, createdAt: true, hooksGenerated: true },
+    });
+    if (!user) return reply.code(404).send({ error: 'User not found' });
+    return user;
+  });
+}

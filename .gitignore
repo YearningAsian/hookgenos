@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+.next/
+.turbo/
+out/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Test coverage
+coverage/
+
+# TypeScript
+*.tsbuildinfo
+
+# Prisma
+prisma/migrations/dev.db
+
+# Hook research data — private, not for public repo
+data/
+packages/core/data/
+*.hooks.json
+.hooks-cache/
+
+# Private collection pipeline (proprietary — not for public repo)
+scripts/collect/
+collect/
+
+# Local developer scripts
+scripts/git-init.ps1
