@@ -82,7 +82,7 @@ export default function PricingPage() {
 
         <p className="mt-8 text-center text-sm text-zinc-600">
           Self-hosting? The full app is free to run on your own infrastructure.{' '}
-          <a href={process.env.NEXT_PUBLIC_GITHUB_URL || 'https://github.com/your-org/hookgenos'} className="text-zinc-500 hover:text-zinc-300 underline">See setup guide →</a>
+          <a href={process.env.NEXT_PUBLIC_GITHUB_URL || 'https://github.com/YearningAsian/hookgenos'} className="text-zinc-500 hover:text-zinc-300 underline">See setup guide →</a>
         </p>
       </main>
     </div>

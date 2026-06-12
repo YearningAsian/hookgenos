@@ -58,7 +58,7 @@ export async function generateHooksWithAI(opts: GenerateOptions, apiKey: string)
   const examples = TEMPLATES.slice(0, 8).map((t) => `- ${t.example}`).join('\n');
 
   const response = await client.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
     messages: [{
       role: 'user',
       content: `Generate ${opts.count} viral social media hooks for content about "${opts.topic}"${opts.niche ? ` in the ${opts.niche} niche` : ''}.

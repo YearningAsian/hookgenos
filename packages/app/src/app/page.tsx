@@ -58,7 +58,7 @@ export default function HomePage() {
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand-800/60 bg-brand-900/30 px-4 py-1.5 text-sm text-brand-300">
             <span className="h-1.5 w-1.5 rounded-full bg-brand-400 animate-pulse" />
             Open source · MIT License
-            <a href="https://github.com/your-org/hookgenos" className="ml-1 flex items-center gap-1 text-brand-400 hover:text-brand-300">
+            <a href="https://github.com/YearningAsian/hookgenos" className="ml-1 flex items-center gap-1 text-brand-400 hover:text-brand-300">
               <Github className="h-3.5 w-3.5" />Star on GitHub
             </a>
           </div>
@@ -81,7 +81,7 @@ export default function HomePage() {
                 Start generating free <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <a href="https://github.com/your-org/hookgenos" target="_blank" rel="noopener noreferrer">
+            <a href="https://github.com/YearningAsian/hookgenos" target="_blank" rel="noopener noreferrer">
               <Button variant="outline" size="lg" className="gap-2 h-12 px-7 text-base">
                 <Github className="h-4 w-4" />View on GitHub
               </Button>
@@ -114,7 +114,7 @@ export default function HomePage() {
           <div className="grid gap-4 sm:grid-cols-3">
             {HOOK_EXAMPLES.map((h, i) => (
               <div key={i} className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-5">
-                <p className="mb-4 text-base font-medium text-zinc-100 leading-relaxed">"{h.text}"</p>
+                <p className="mb-4 text-base font-medium text-zinc-100 leading-relaxed">&ldquo;{h.text}&rdquo;</p>
                 <div className="flex items-center justify-between">
                   <div className="flex gap-2">
                     <span className="rounded-full border border-brand-800 bg-brand-900/50 px-2.5 py-0.5 text-xs text-brand-300">{h.type}</span>
@@ -191,7 +191,7 @@ export default function HomePage() {
 
           <p className="mt-6 text-center text-sm text-zinc-600">
             Self-hosting? Run it for free on your own infrastructure.{' '}
-            <a href="https://github.com/your-org/hookgenos" className="text-zinc-500 hover:text-zinc-300 underline">See the docs →</a>
+            <a href="https://github.com/YearningAsian/hookgenos" className="text-zinc-500 hover:text-zinc-300 underline">See the docs →</a>
           </p>
         </div>
       </section>
@@ -207,7 +207,7 @@ export default function HomePage() {
             <span className="text-zinc-600 text-sm">· MIT License</span>
           </div>
           <div className="flex items-center gap-6 text-sm text-zinc-500">
-            <a href="https://github.com/your-org/hookgenos" className="hover:text-zinc-300 flex items-center gap-1.5"><Github className="h-4 w-4" />GitHub</a>
+            <a href="https://github.com/YearningAsian/hookgenos" className="hover:text-zinc-300 flex items-center gap-1.5"><Github className="h-4 w-4" />GitHub</a>
             <Link href="/pricing" className="hover:text-zinc-300">Pricing</Link>
             <Link href="/login" className="hover:text-zinc-300">Sign in</Link>
           </div>

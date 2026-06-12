@@ -75,7 +75,7 @@ export function HookGenerator({ isPro = false, isAuthenticated = false }: HookGe
     <div className="space-y-6">
       {/* Topic input */}
       <div>
-        <label className="mb-2 block text-sm font-medium text-zinc-300">What's your hook about?</label>
+        <label className="mb-2 block text-sm font-medium text-zinc-300">What&apos;s your hook about?</label>
         <div className="flex gap-3">
           <Input
             value={topic}

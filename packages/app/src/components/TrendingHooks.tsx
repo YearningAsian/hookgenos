@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { TrendingUp, Copy, Check, Zap, Lock, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { api, type TrendingHook } from '@/lib/api';
@@ -45,7 +45,7 @@ export function TrendingHooks({ isPro, isAuthenticated }: TrendingHooksProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [planLimit, setPlanLimit] = useState<number | null>(null);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!isAuthenticated) return;
     setLoading(true);
     setError('');
@@ -61,9 +61,9 @@ export function TrendingHooks({ isPro, isAuthenticated }: TrendingHooksProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [isAuthenticated, isPro, platform]);
 
-  useEffect(() => { load(); }, [platform, isAuthenticated]);
+  useEffect(() => { load(); }, [load]);
 
   const copy = async (hook: TrendingHook) => {
     await navigator.clipboard.writeText(hook.text);
@@ -76,7 +76,7 @@ export function TrendingHooks({ isPro, isAuthenticated }: TrendingHooksProps) {
       <div className="py-12 text-center">
         <TrendingUp className="mx-auto mb-3 h-10 w-10 text-brand-500" />
         <p className="font-semibold text-zinc-100">Trending hooks, updated daily</p>
-        <p className="mt-1 text-sm text-zinc-500">Sign up to see what's going viral right now</p>
+        <p className="mt-1 text-sm text-zinc-500">Sign up to see what&apos;s going viral right now</p>
         <a href="/register" className="mt-4 inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 transition-colors">
           Get started free
         </a>

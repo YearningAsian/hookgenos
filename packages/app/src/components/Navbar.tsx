@@ -34,7 +34,7 @@ export function Navbar() {
         <div className="hidden md:flex items-center gap-1">
           <Link href="/#features" className="px-3 py-2 text-sm text-zinc-400 hover:text-zinc-100 transition-colors">Features</Link>
           <Link href="/pricing" className="px-3 py-2 text-sm text-zinc-400 hover:text-zinc-100 transition-colors">Pricing</Link>
-          <a href={process.env.NEXT_PUBLIC_GITHUB_URL || 'https://github.com/your-org/hookgenos'} target="_blank" rel="noopener noreferrer" className="px-3 py-2 text-sm text-zinc-400 hover:text-zinc-100 transition-colors flex items-center gap-1.5">
+          <a href={process.env.NEXT_PUBLIC_GITHUB_URL || 'https://github.com/YearningAsian/hookgenos'} target="_blank" rel="noopener noreferrer" className="px-3 py-2 text-sm text-zinc-400 hover:text-zinc-100 transition-colors flex items-center gap-1.5">
             <Github className="h-4 w-4" />GitHub
           </a>
         </div>
@@ -68,7 +68,7 @@ export function Navbar() {
         <div className="md:hidden border-t border-zinc-800 bg-zinc-950 px-4 py-4 space-y-2">
           <Link href="/#features" className="block px-3 py-2 text-sm text-zinc-400">Features</Link>
           <Link href="/pricing" className="block px-3 py-2 text-sm text-zinc-400">Pricing</Link>
-          <a href={process.env.NEXT_PUBLIC_GITHUB_URL || 'https://github.com/your-org/hookgenos'} target="_blank" rel="noopener noreferrer" className="block px-3 py-2 text-sm text-zinc-400">GitHub</a>
+          <a href={process.env.NEXT_PUBLIC_GITHUB_URL || 'https://github.com/YearningAsian/hookgenos'} target="_blank" rel="noopener noreferrer" className="block px-3 py-2 text-sm text-zinc-400">GitHub</a>
           {user ? (
             <Link href="/dashboard" className="block px-3 py-2 text-sm text-zinc-100">Dashboard</Link>
           ) : (
