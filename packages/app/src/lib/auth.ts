@@ -1,22 +1,15 @@
 'use client';
 import { api, type User } from './api';
 
+// Re-exported so the public API (`import { safeNextPath } from '@/lib/auth'`)
+// stays stable; the implementation lives in a pure module so it can be unit
+// tested without pulling in this client module's runtime chain.
+export { safeNextPath } from './safe-next-path';
+
 export async function fetchCurrentUser(): Promise<User | null> {
   try {
     return await api.auth.me();
   } catch {
     return null;
   }
-}
-
-/**
- * Sanitize a post-auth redirect target taken from the URL.
- * Only same-origin paths are allowed — anything absolute ("https://…"),
- * protocol-relative ("//…"), or backslash-escaped is rejected to prevent
- * open redirects after login/registration.
- */
-export function safeNextPath(raw: string | null, fallback = '/dashboard'): string {
-  if (!raw) return fallback;
-  if (!raw.startsWith('/') || raw.startsWith('//') || raw.startsWith('/\\')) return fallback;
-  return raw;
 }
