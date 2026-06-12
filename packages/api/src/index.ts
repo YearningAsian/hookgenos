@@ -4,7 +4,7 @@ import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import jwt from '@fastify/jwt';
 import rateLimit from '@fastify/rate-limit';
-import rawBody from '@fastify/rawbody';
+import rawBody from 'fastify-raw-body';
 import { authRoutes } from './routes/auth';
 import { hooksRoutes } from './routes/hooks';
 import { billingRoutes } from './routes/billing';
@@ -17,8 +17,15 @@ const app = Fastify({
 });
 
 async function start() {
-  // Must be registered before content type parsers / routes
-  await app.register(rawBody, { runFirst: true });
+  // Must be registered before content type parsers / routes.
+  // global:false — only routes that opt in via `config: { rawBody: true }`
+  // (the Stripe webhook) pay the cost of buffering the raw payload.
+  await app.register(rawBody, {
+    field: 'rawBody',
+    global: false,
+    encoding: false,
+    runFirst: true,
+  });
   await app.register(helmet, { contentSecurityPolicy: false });
   await app.register(cors, {
     origin: process.env.APP_URL || 'http://localhost:3000',

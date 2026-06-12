@@ -29,7 +29,7 @@ export async function billingRoutes(app: FastifyInstance) {
 
     switch (event.type) {
       case 'checkout.session.completed': {
-        const session = event.data.object as Stripe.CheckoutSession;
+        const session = event.data.object as Stripe.Checkout.Session;
         if (session.client_reference_id) {
           await prisma.user.update({
             where: { id: session.client_reference_id },
