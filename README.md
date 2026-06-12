@@ -39,7 +39,7 @@ HookGenOS is open source because great content tools should not be locked behind
 
 | Requirement | Version |
 |---|---|
-| Node.js | >= 20 |
+| Node.js | >= 20.19 |
 | pnpm | >= 9 |
 | PostgreSQL | >= 15 (or use Docker Compose) |
 | Redis | Optional — used for rate-limit caching |
@@ -179,7 +179,7 @@ HookGenOS is a TypeScript monorepo managed with **pnpm workspaces** and built wi
 hookgenos/
 ├── packages/
 │   ├── api/        # Fastify backend — auth, hook generation API, Stripe billing
-│   ├── app/        # Next.js 14 frontend — dark-themed UI, Tailwind CSS
+│   ├── app/        # Next.js 16 frontend — dark-themed UI, Tailwind CSS
 │   ├── core/       # Hook generation engine — 60+ templates + OpenAI fallback
 │   └── database/   # Prisma schema, migrations, and typed client
 ├── docker/
@@ -200,7 +200,7 @@ hookgenos/
 
 **`packages/database`** owns the Prisma schema and exports a pre-configured `PrismaClient` instance. Migrations live here. Both the API and any scripts import from this package — there is one source of truth for the data model.
 
-**`packages/app`** is a Next.js 14 app with the App Router. It communicates with the API via `NEXT_PUBLIC_API_URL` and stores the API-issued JWT client-side for session management. The UI is built with Tailwind CSS and ships a dark theme by default.
+**`packages/app`** is a Next.js 16 app with the App Router. It communicates with the API via `NEXT_PUBLIC_API_URL` and stores the API-issued JWT client-side for session management. The UI is built with Tailwind CSS and ships a dark theme by default.
 
 ### Request flow
 

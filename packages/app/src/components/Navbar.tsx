@@ -1,7 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Zap, Github, Menu, X, LogOut, LayoutDashboard } from 'lucide-react';
+import { Zap, Menu, X, LogOut, LayoutDashboard } from 'lucide-react';
+import { GithubIcon } from '@/components/ui/github-icon';
 import { Button } from './ui/button';
 import { fetchCurrentUser, clearToken } from '@/lib/auth';
 import type { User } from '@/lib/api';
@@ -35,7 +36,7 @@ export function Navbar() {
           <Link href="/#features" className="px-3 py-2 text-sm text-zinc-400 hover:text-zinc-100 transition-colors">Features</Link>
           <Link href="/pricing" className="px-3 py-2 text-sm text-zinc-400 hover:text-zinc-100 transition-colors">Pricing</Link>
           <a href={process.env.NEXT_PUBLIC_GITHUB_URL || 'https://github.com/YearningAsian/hookgenos'} target="_blank" rel="noopener noreferrer" className="px-3 py-2 text-sm text-zinc-400 hover:text-zinc-100 transition-colors flex items-center gap-1.5">
-            <Github className="h-4 w-4" />GitHub
+            <GithubIcon className="h-4 w-4" />GitHub
           </a>
         </div>
 

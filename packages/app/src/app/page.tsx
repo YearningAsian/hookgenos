@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { Zap, Github, ArrowRight, Check, Star, TrendingUp, Clock, Users, Sparkles, Code2, Shield } from 'lucide-react';
+import { Zap, ArrowRight, Check, Star, TrendingUp, Clock, Users, Sparkles, Code2, Shield } from 'lucide-react';
+import { GithubIcon } from '@/components/ui/github-icon';
 import { Navbar } from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { HookGenerator } from '@/components/HookGenerator';
@@ -59,7 +60,7 @@ export default function HomePage() {
             <span className="h-1.5 w-1.5 rounded-full bg-brand-400 animate-pulse" />
             Open source · MIT License
             <a href="https://github.com/YearningAsian/hookgenos" className="ml-1 flex items-center gap-1 text-brand-400 hover:text-brand-300">
-              <Github className="h-3.5 w-3.5" />Star on GitHub
+              <GithubIcon className="h-3.5 w-3.5" />Star on GitHub
             </a>
           </div>
 
@@ -83,7 +84,7 @@ export default function HomePage() {
             </Link>
             <a href="https://github.com/YearningAsian/hookgenos" target="_blank" rel="noopener noreferrer">
               <Button variant="outline" size="lg" className="gap-2 h-12 px-7 text-base">
-                <Github className="h-4 w-4" />View on GitHub
+                <GithubIcon className="h-4 w-4" />View on GitHub
               </Button>
             </a>
           </div>
@@ -207,7 +208,7 @@ export default function HomePage() {
             <span className="text-zinc-600 text-sm">· MIT License</span>
           </div>
           <div className="flex items-center gap-6 text-sm text-zinc-500">
-            <a href="https://github.com/YearningAsian/hookgenos" className="hover:text-zinc-300 flex items-center gap-1.5"><Github className="h-4 w-4" />GitHub</a>
+            <a href="https://github.com/YearningAsian/hookgenos" className="hover:text-zinc-300 flex items-center gap-1.5"><GithubIcon className="h-4 w-4" />GitHub</a>
             <Link href="/pricing" className="hover:text-zinc-300">Pricing</Link>
             <Link href="/login" className="hover:text-zinc-300">Sign in</Link>
           </div>

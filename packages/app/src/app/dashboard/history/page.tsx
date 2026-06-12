@@ -51,6 +51,9 @@ export default function HistoryPage() {
     }
   }, [authed, page, platform, favOnly]);
 
+  // Fetch on mount / param change; load() sets a loading flag synchronously,
+  // which this heuristic rule flags.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load(); }, [load]);
 
   const copy = async (item: GeneratedHook) => {

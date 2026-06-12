@@ -7,10 +7,10 @@
     "resolveJsonModule": true,
     "moduleDetection": "force",
     "isolatedModules": true,
-    "lib": ["ES2022"],
-    "target": "ES2022",
-    "module": "CommonJS",
-    "moduleResolution": "node"
+    "lib": ["ES2023"],
+    "target": "ES2023",
+    "module": "node20",
+    "types": ["node"]
   },
   "exclude": ["node_modules"]
 }

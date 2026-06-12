@@ -25,8 +25,11 @@ export async function hooksRoutes(app: FastifyInstance) {
     let body;
     try {
       body = generateSchema.parse(req.body);
-    } catch (err: any) {
-      return reply.code(400).send({ error: 'Validation error', details: err.errors });
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return reply.code(400).send({ error: 'Validation error', details: err.issues });
+      }
+      throw err;
     }
 
     // Fetch user + today's count in parallel

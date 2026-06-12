@@ -1,4 +1,4 @@
-FROM node:20-alpine AS base
+﻿FROM node:24-alpine AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
@@ -15,7 +15,7 @@ RUN pnpm --filter @hookgenos/database generate
 RUN pnpm --filter @hookgenos/core build
 RUN pnpm --filter @hookgenos/api build
 
-FROM node:20-alpine AS runner
+FROM node:24-alpine AS runner
 WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 hookgenos

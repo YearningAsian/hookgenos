@@ -1,14 +1,29 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+/* Theme extensions (formerly tailwind.config.js) */
+@theme {
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+
+  --color-brand-50: #faf5ff;
+  --color-brand-100: #f3e8ff;
+  --color-brand-200: #e9d5ff;
+  --color-brand-300: #d8b4fe;
+  --color-brand-400: #c084fc;
+  --color-brand-500: #a855f7;
+  --color-brand-600: #9333ea;
+  --color-brand-700: #7e22ce;
+  --color-brand-800: #6b21a8;
+  --color-brand-900: #581c87;
+}
 
 :root {
   --background: #09090b;
   --foreground: #fafafa;
 }
 
+/* Tailwind v4 preflight defaults borders to currentColor — keep zinc-800. */
 * {
-  border-color: theme('colors.zinc.800');
+  border-color: var(--color-zinc-800);
 }
 
 body {

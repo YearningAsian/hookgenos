@@ -22,7 +22,7 @@ Thank you for taking the time to contribute. HookGenOS is intentionally structur
 hookgenos/
 ├── packages/
 │   ├── api/        # Fastify backend
-│   ├── app/        # Next.js 14 frontend
+│   ├── app/        # Next.js 16 frontend
 │   ├── core/       # Hook generation engine
 │   └── database/   # Prisma schema
 ```
@@ -40,7 +40,7 @@ All API input is validated with [Zod](https://zod.dev/) schemas at the route bou
 
 ### `packages/app`
 
-A [Next.js 14](https://nextjs.org/) application using the App Router. The UI is built with [Tailwind CSS](https://tailwindcss.com/) and ships a dark theme by default. Key directories:
+A [Next.js 16](https://nextjs.org/) application using the App Router. The UI is built with [Tailwind CSS](https://tailwindcss.com/) and ships a dark theme by default. Key directories:
 
 - `src/app/` — App Router pages and layouts
 - `src/components/` — shared React components
@@ -101,7 +101,7 @@ docker run -d \
   -e POSTGRES_PASSWORD=postgres \
   -e POSTGRES_DB=hookgenos \
   -p 127.0.0.1:5432:5432 \
-  postgres:16
+  postgres:18
 ```
 
 ### 4. Run migrations
@@ -257,7 +257,7 @@ After making the changes, run `pnpm dev` and verify:
 ## Code Style
 
 - TypeScript strict mode is on everywhere (see `tsconfig.base.json`).
-- The frontend is linted with ESLint via `next lint` (`pnpm lint`).
+- The frontend is linted with ESLint (flat config, `eslint.config.mjs`) via `pnpm lint`.
 - Zod schemas validate all API input at route boundaries.
 - No database calls in `packages/core` — keep the engine portable and independently testable.
 - Prefer `const` over `let`; avoid `var`; prefer named exports.

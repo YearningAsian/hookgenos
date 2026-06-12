@@ -63,6 +63,9 @@ export function TrendingHooks({ isPro, isAuthenticated }: TrendingHooksProps) {
     }
   }, [isAuthenticated, isPro, platform]);
 
+  // Fetch on mount / param change; load() sets a loading flag synchronously,
+  // which this heuristic rule flags.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load(); }, [load]);
 
   const copy = async (hook: TrendingHook) => {

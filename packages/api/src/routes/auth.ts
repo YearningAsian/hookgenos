@@ -5,13 +5,13 @@ import { prisma } from '../lib/prisma';
 import { authenticate } from '../middleware/auth';
 
 const registerSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   password: z.string().min(8, 'Password must be at least 8 characters').max(72, 'Password must be at most 72 characters'),
   name: z.string().min(1).max(100).optional(),
 });
 
 const loginSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   password: z.string().min(1),
 });
 
@@ -38,8 +38,8 @@ export async function authRoutes(app: FastifyInstance) {
       const token = app.jwt.sign({ sub: user.id, email: user.email }, { expiresIn: '7d' });
       return reply.code(201).send({ user, token });
     } catch (err) {
-      if (err instanceof Error && err.name === 'ZodError') {
-        return reply.code(400).send({ error: 'Validation error', details: (err as any).errors });
+      if (err instanceof z.ZodError) {
+        return reply.code(400).send({ error: 'Validation error', details: err.issues });
       }
       throw err;
     }
@@ -58,8 +58,8 @@ export async function authRoutes(app: FastifyInstance) {
         token,
       };
     } catch (err) {
-      if (err instanceof Error && err.name === 'ZodError') {
-        return reply.code(400).send({ error: 'Validation error', details: (err as any).errors });
+      if (err instanceof z.ZodError) {
+        return reply.code(400).send({ error: 'Validation error', details: err.issues });
       }
       throw err;
     }

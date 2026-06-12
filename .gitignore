@@ -39,6 +39,7 @@ next-env.d.ts
 
 # Prisma
 prisma/migrations/dev.db
+packages/database/src/generated/
 
 # Hook research data — private, not for public repo
 data/

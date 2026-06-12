@@ -12,10 +12,10 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "openai": "^4.52.0"
+    "openai": "^6.42.0"
   },
   "devDependencies": {
-    "typescript": "^5.4.0",
-    "@types/node": "^20.0.0"
+    "typescript": "^6.0.3",
+    "@types/node": "^24.13.2"
   }
 }

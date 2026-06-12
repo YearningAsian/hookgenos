@@ -13,7 +13,9 @@ packages/database/
 │   ├── migrations/     # SQL migration history (0_init is the baseline)
 │   └── seed.ts         # Sample-data seed script
 ├── src/
-│   └── index.ts        # Re-exports PrismaClient + model types
+│   ├── generated/      # Prisma 7 generated client (gitignored, created by db:generate)
+│   └── index.ts        # Re-exports PrismaClient + model types + PrismaPg adapter
+├── prisma.config.ts    # Prisma CLI config — loads .env, points Migrate at DATABASE_URL
 └── package.json
 ```
 

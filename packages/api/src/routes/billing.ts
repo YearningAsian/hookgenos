@@ -4,8 +4,9 @@ import { prisma } from '../lib/prisma';
 import { authenticate } from '../middleware/auth';
 
 export async function billingRoutes(app: FastifyInstance) {
+  // No apiVersion override — use the version pinned by the installed SDK.
   const stripe = process.env.STRIPE_SECRET_KEY
-    ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' as any })
+    ? new Stripe(process.env.STRIPE_SECRET_KEY)
     : null;
 
   app.post('/webhook', {
@@ -16,12 +17,15 @@ export async function billingRoutes(app: FastifyInstance) {
     }
 
     const sig = req.headers['stripe-signature'] as string;
-    let event: Stripe.Event;
 
+    // rawBody is set by @fastify/rawbody — required for Stripe signature verification
+    const rawPayload = (req as any).rawBody;
+    if (!rawPayload) return reply.code(400).send({ error: 'Missing raw body' });
+
+    // Type inferred from constructEvent — Stripe.Event is a discriminated
+    // union, so the switch below narrows data.object per event type.
+    let event;
     try {
-      // rawBody is set by @fastify/rawbody — required for Stripe signature verification
-      const rawPayload = (req as any).rawBody;
-      if (!rawPayload) return reply.code(400).send({ error: 'Missing raw body' });
       event = stripe.webhooks.constructEvent(rawPayload, sig, process.env.STRIPE_WEBHOOK_SECRET);
     } catch {
       return reply.code(400).send({ error: 'Invalid webhook signature' });
@@ -29,7 +33,7 @@ export async function billingRoutes(app: FastifyInstance) {
 
     switch (event.type) {
       case 'checkout.session.completed': {
-        const session = event.data.object as Stripe.Checkout.Session;
+        const session = event.data.object;
         if (session.client_reference_id) {
           await prisma.user.update({
             where: { id: session.client_reference_id },
@@ -44,7 +48,7 @@ export async function billingRoutes(app: FastifyInstance) {
       }
       case 'customer.subscription.deleted':
       case 'customer.subscription.paused': {
-        const sub = event.data.object as Stripe.Subscription;
+        const sub = event.data.object;
         await prisma.user.updateMany({
           where: { stripeSubscriptionId: sub.id },
           data: { plan: 'FREE', stripeSubscriptionId: null },
