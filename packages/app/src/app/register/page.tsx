@@ -6,12 +6,12 @@ import { Zap, Loader2, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { api } from '@/lib/api';
-import { saveToken } from '@/lib/auth';
+import { saveToken, safeNextPath } from '@/lib/auth';
 
 function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const next = searchParams.get('next') || '/dashboard';
+  const next = safeNextPath(searchParams.get('next'));
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');

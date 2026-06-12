@@ -26,11 +26,16 @@ Thumbs.db
 .vscode/
 *.swp
 
+# Local agent working notes (never commit)
+AGENTS.md
+task_plan.md
+
 # Test coverage
 coverage/
 
 # TypeScript
 *.tsbuildinfo
+next-env.d.ts
 
 # Prisma
 prisma/migrations/dev.db
