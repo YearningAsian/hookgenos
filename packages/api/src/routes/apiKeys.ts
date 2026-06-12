@@ -3,6 +3,7 @@ import { createHash, randomBytes } from 'node:crypto';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma';
 import { authenticate } from '../middleware/auth';
+import { parseOr400 } from '../lib/validation';
 
 const createKeySchema = z.object({
   name: z.string().min(1).max(100),
@@ -22,45 +23,37 @@ export async function apiKeyRoutes(app: FastifyInstance) {
   // Create a new API key. The raw key is returned exactly once — it cannot
   // be retrieved again; only the SHA-256 hash is stored.
   app.post('/', async (req, reply) => {
-    try {
-      const payload = req.user as { sub: string };
-      const body = createKeySchema.parse(req.body);
+    const body = parseOr400(createKeySchema, req.body, reply);
+    if (!body) return reply;
 
-      const existing = await prisma.apiKey.count({ where: { userId: payload.sub } });
-      if (existing >= 10) {
-        return reply.code(429).send({ error: 'API key limit reached (max 10 per account)' });
-      }
-
-      const { key, hash } = generateApiKey();
-      const expiresAt = body.expiresInDays
-        ? new Date(Date.now() + body.expiresInDays * 86_400_000)
-        : null;
-
-      const record = await prisma.apiKey.create({
-        data: {
-          userId: payload.sub,
-          name: body.name,
-          keyHash: hash,
-          expiresAt,
-        },
-        select: { id: true, name: true, createdAt: true, expiresAt: true },
-      });
-
-      // Return the raw key in the creation response only.
-      return reply.code(201).send({ ...record, key });
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        return reply.code(400).send({ error: 'Validation error', details: err.issues });
-      }
-      throw err;
+    const existing = await prisma.apiKey.count({ where: { userId: req.user.sub } });
+    if (existing >= 10) {
+      return reply.code(429).send({ error: 'API key limit reached (max 10 per account)' });
     }
+
+    const { key, hash } = generateApiKey();
+    const expiresAt = body.expiresInDays
+      ? new Date(Date.now() + body.expiresInDays * 86_400_000)
+      : null;
+
+    const record = await prisma.apiKey.create({
+      data: {
+        userId: req.user.sub,
+        name: body.name,
+        keyHash: hash,
+        expiresAt,
+      },
+      select: { id: true, name: true, createdAt: true, expiresAt: true },
+    });
+
+    // Return the raw key in the creation response only.
+    return reply.code(201).send({ ...record, key });
   });
 
   // List all API keys for the authenticated user (hashes never returned).
   app.get('/', async (req) => {
-    const payload = req.user as { sub: string };
     const keys = await prisma.apiKey.findMany({
-      where: { userId: payload.sub },
+      where: { userId: req.user.sub },
       select: { id: true, name: true, lastUsed: true, expiresAt: true, createdAt: true },
       orderBy: { createdAt: 'desc' },
     });
@@ -69,10 +62,9 @@ export async function apiKeyRoutes(app: FastifyInstance) {
 
   // Revoke (delete) an API key by id.
   app.delete('/:id', async (req, reply) => {
-    const payload = req.user as { sub: string };
     const { id } = req.params as { id: string };
     const deleted = await prisma.apiKey.deleteMany({
-      where: { id, userId: payload.sub },
+      where: { id, userId: req.user.sub },
     });
     if (deleted.count === 0) {
       return reply.code(404).send({ error: 'API key not found' });

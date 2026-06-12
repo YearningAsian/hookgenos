@@ -4,6 +4,15 @@ import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma';
 import { sendPasswordResetEmail } from '../lib/email';
+import { parseOr400 } from '../lib/validation';
+
+const resetPasswordSchema = z.object({
+  token: z.string().length(64),
+  password: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .max(72, 'Password must be at most 72 characters'),
+});
 
 const RATE_LIMIT = { config: { rateLimit: { max: 5, timeWindow: '15 minutes' } } };
 const TOKEN_TTL_MS = 60 * 60 * 1000; // 1 hour
@@ -47,37 +56,23 @@ export async function passwordResetRoutes(app: FastifyInstance) {
 
   // Consume a reset token and update the password.
   app.post('/reset-password', RATE_LIMIT, async (req, reply) => {
-    try {
-      const body = z
-        .object({
-          token: z.string().length(64),
-          password: z
-            .string()
-            .min(8, 'Password must be at least 8 characters')
-            .max(72, 'Password must be at most 72 characters'),
-        })
-        .parse(req.body);
+    const body = parseOr400(resetPasswordSchema, req.body, reply);
+    if (!body) return reply;
 
-      const tokenHash = hashToken(body.token);
-      const record = await prisma.passwordResetToken.findUnique({ where: { tokenHash } });
+    const tokenHash = hashToken(body.token);
+    const record = await prisma.passwordResetToken.findUnique({ where: { tokenHash } });
 
-      if (!record || record.usedAt || record.expiresAt < new Date()) {
-        return reply.code(400).send({ error: 'Reset link is invalid or has expired' });
-      }
-
-      const hashed = await bcrypt.hash(body.password, 12);
-
-      await prisma.$transaction([
-        prisma.user.update({ where: { id: record.userId }, data: { passwordHash: hashed } }),
-        prisma.passwordResetToken.update({ where: { id: record.id }, data: { usedAt: new Date() } }),
-      ]);
-
-      return { ok: true };
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        return reply.code(400).send({ error: 'Validation error', details: err.issues });
-      }
-      throw err;
+    if (!record || record.usedAt || record.expiresAt < new Date()) {
+      return reply.code(400).send({ error: 'Reset link is invalid or has expired' });
     }
+
+    const hashed = await bcrypt.hash(body.password, 12);
+
+    await prisma.$transaction([
+      prisma.user.update({ where: { id: record.userId }, data: { passwordHash: hashed } }),
+      prisma.passwordResetToken.update({ where: { id: record.id }, data: { usedAt: new Date() } }),
+    ]);
+
+    return { ok: true };
   });
 }
