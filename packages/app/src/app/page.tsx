@@ -56,7 +56,7 @@ export default function HomePage() {
             Open source, self-hostable, and optionally AI-powered.
           </p>
           <div className="hero__cta">
-            <Link href="/register"><Button variant="cta" size="lg"><Bolt size={16} /> Start generating free</Button></Link>
+            <Link href="/register"><Button variant="cta" size="lg" className="hg-btn--breathe"><Bolt size={16} /> Start generating free</Button></Link>
             <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
               <Button variant="outline" size="lg"><GithubIcon className="h-4 w-4" /> View on GitHub</Button>
             </a>

@@ -135,14 +135,15 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label className="auth__label">Email</label>
+              <label className="auth__label" htmlFor="settings-email">Email</label>
               <Input
+                id="settings-email"
                 value={userData?.email ?? ''}
                 readOnly
                 disabled
-                className="cursor-default text-zinc-400"
+                style={{ color: 'var(--text-muted)' }}
               />
-              <p className="mt-1 text-xs text-zinc-600">Email cannot be changed.</p>
+              <p className="mt-1 text-xs text-zinc-500">Email cannot be changed.</p>
             </div>
           </div>
         </section>

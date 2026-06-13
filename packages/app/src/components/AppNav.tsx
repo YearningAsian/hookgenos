@@ -53,14 +53,14 @@ export function AppNav() {
           <button onClick={logout} className="app-nav__icon" title="Sign out" aria-label="Sign out">
             <LogOut className="h-4 w-4" />
           </button>
-          <button className="app-nav__icon md:hidden" aria-label="Menu" onClick={() => setOpen(o => !o)}>
+          <button className="app-nav__icon app-nav__burger" aria-label="Menu" aria-expanded={open} onClick={() => setOpen(o => !o)}>
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
       </div>
 
       {open && (
-        <div className="md:hidden border-t border-zinc-800 px-5 py-3 flex flex-col gap-1">
+        <div className="app-nav__menu flex-col gap-1 border-t border-zinc-800 px-5 py-3">
           {LINKS.map(l => (
             <Link key={l.href} href={l.href} className="app-nav__link" onClick={() => setOpen(false)}>
               <l.icon className="h-4 w-4" />{l.label}

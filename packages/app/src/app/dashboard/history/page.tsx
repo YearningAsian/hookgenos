@@ -131,18 +131,23 @@ export default function HistoryPage() {
                     <button
                       className="history-row__btn history-row__btn--fav"
                       data-on={item.isFavorite}
+                      aria-pressed={item.isFavorite}
+                      aria-label={item.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
                       onClick={() => toggleFav(item)}
                     >
                       <Heart className="h-3.5 w-3.5" fill={item.isFavorite ? 'currentColor' : 'none'} />
                     </button>
                     <button
                       className="history-row__btn"
+                      data-copied={copiedId === item.id}
+                      aria-label="Copy hook"
                       onClick={() => copy(item)}
                     >
                       {copiedId === item.id ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                     </button>
                     <button
                       className="history-row__btn history-row__btn--del"
+                      aria-label="Delete hook"
                       onClick={() => del(item.id!)}
                     >
                       <Trash2 className="h-3.5 w-3.5" />

@@ -516,7 +516,7 @@ body {
 .hero__caret { display: inline-block; width: 4px; height: 0.92em; margin-left: 4px; vertical-align: -0.08em; background: var(--brand-400); border-radius: 2px; animation: hg-caret 1s steps(1) infinite; }
 .hero__sub { max-width: 600px; margin: 0 auto 30px; font-size: 19px; color: var(--text-muted); line-height: 1.6; }
 .hero__cta { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
-.hero__fine { margin-top: 16px; font-size: 13px; color: var(--text-faint); }
+.hero__fine { margin-top: 16px; font-size: 13px; color: var(--text-subtle); }
 
 .demo { max-width: 760px; margin: 0 auto; padding: 0 20px 100px; }
 .demo__eyebrow { text-align: center; font-size: 13px; color: var(--text-subtle); margin: 0 0 14px; }
@@ -546,7 +546,7 @@ body {
 .price-card__list li { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; color: var(--zinc-300); }
 .price-card__list i { color: var(--zinc-600); margin-top: 1px; flex-shrink: 0; display: inline-flex; }
 .price-card__list i.on { color: var(--brand-400); }
-.pricing__note { text-align: center; margin-top: 26px; font-size: 13px; color: var(--text-faint); }
+.pricing__note { text-align: center; margin-top: 26px; font-size: 13px; color: var(--text-subtle); }
 .pricing__note a { color: var(--text-subtle); text-decoration: underline; transition: var(--t-color); }
 .pricing__note a:hover { color: var(--zinc-300); }
 
@@ -612,7 +612,7 @@ body {
 .gen__go { margin-left: auto; }
 .gen__results { margin-top: 28px; }
 .gen__results-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; color: var(--zinc-100); font-size: 14px; }
-.gen__results-head span { color: var(--text-faint); font-size: 12px; }
+.gen__results-head span { color: var(--text-subtle); font-size: 12px; }
 .gen__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 @media (max-width: 680px) { .gen__grid { grid-template-columns: 1fr; } }
 
@@ -684,3 +684,50 @@ body {
 .history-row__btn--del:hover { color: #f87171; }
 .history-row__meta { display: flex; align-items: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
 .history-row__score { margin-left: auto; display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-subtle); font-variant-numeric: tabular-nums; }
+/* Spring + spark on the history favorite, and sweep-to-check on copy — mirror HookCard. */
+.history-row__btn--fav[data-on='true'] svg { animation: hg-spark var(--dur-slow) var(--ease-spring); filter: drop-shadow(var(--glow-spark)); }
+.history-row__btn[data-copied='true'] { color: var(--spark-success); }
+.history-row__btn[data-copied='true'] svg { animation: hg-sweep var(--dur-base) var(--ease-spring); }
+
+/* ============================================================
+   A11Y — focus rings, tap targets, mobile-nav gating
+   ============================================================ */
+
+/* AppNav burger gated on the same 720px boundary as .app-nav__links. */
+.app-nav__burger { display: none; }
+.app-nav__menu { display: none; }
+@media (max-width: 720px) {
+  .app-nav__burger { display: inline-flex; }
+  .app-nav__menu { display: flex; }
+}
+
+/* Visible focus rings on nav/menu controls that lack their own. */
+.site-nav__link:focus-visible,
+.site-nav__brand:focus-visible,
+.site-nav__burger:focus-visible,
+.site-menu__link:focus-visible,
+.app-nav__link:focus-visible,
+.app-nav__brand:focus-visible,
+.app-nav__icon:focus-visible,
+.hero__star:focus-visible,
+.site-footer__links a:focus-visible,
+.pricing__note a:focus-visible,
+.auth__foot a:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-focus);
+  border-radius: var(--radius-md);
+}
+
+/* Honor the DS 44px hit-target floor on touch (coarse) pointers. */
+@media (pointer: coarse) {
+  .hg-fav,
+  .hg-copy,
+  .app-nav__icon,
+  .site-nav__burger,
+  .history-row__btn {
+    min-width: var(--tap-min);
+    min-height: var(--tap-min);
+    align-items: center;
+    justify-content: center;
+  }
+}

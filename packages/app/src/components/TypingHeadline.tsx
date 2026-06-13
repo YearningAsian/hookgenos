@@ -7,13 +7,27 @@ const PHRASES = ['stop the scroll', 'kill the swipe', 'demand a tap', 'own the f
  * TypingHeadline — the hero's self-rewriting clip-text phrase. It types, holds,
  * deletes, and re-fires alternates the way the generator does, so within a
  * couple seconds a visitor feels "this thing rewrites attention for a living."
+ * Respects prefers-reduced-motion by showing a single static phrase (a CSS
+ * media query alone can't stop a JS timer loop).
  */
 export function TypingHeadline() {
+  const [reduced, setReduced] = useState(false);
   const [pi, setPi] = useState(0);
   const [txt, setTxt] = useState('');
   const [del, setDel] = useState(false);
 
+  // Detect the reduced-motion preference (deferred so it never runs synchronously
+  // in the effect body, and so server/client first render stay identical).
   useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => setReduced(mq.matches);
+    const raf = requestAnimationFrame(update);
+    mq.addEventListener('change', update);
+    return () => { cancelAnimationFrame(raf); mq.removeEventListener('change', update); };
+  }, []);
+
+  useEffect(() => {
+    if (reduced) return;
     const full = PHRASES[pi];
     const atFull = !del && txt === full;
     const atEmpty = del && txt === '';
@@ -29,11 +43,11 @@ export function TypingHeadline() {
       }
     }, delay);
     return () => clearTimeout(t);
-  }, [txt, del, pi]);
+  }, [txt, del, pi, reduced]);
 
   return (
     <span className="hero__clip">
-      {txt}
+      {reduced ? PHRASES[0] : txt}
       <span className="hero__caret" />
     </span>
   );

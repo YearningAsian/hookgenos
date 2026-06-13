@@ -30,9 +30,25 @@ export function SiteNav() {
   const [active, setActive] = useState('features');
   const [menuOpen, setMenuOpen] = useState(false);
   const linksRef = useRef<HTMLDivElement>(null);
+  const burgerRef = useRef<HTMLButtonElement>(null);
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
   const [ind, setInd] = useState({ left: 0, width: 0 });
 
   useEffect(() => { fetchCurrentUser().then(setUser); }, []);
+
+  // Overlay: close on Escape, move focus into the dialog, return it to the burger on close.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const burger = burgerRef.current;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenuOpen(false); };
+    window.addEventListener('keydown', onKey);
+    const raf = requestAnimationFrame(() => closeBtnRef.current?.focus());
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      cancelAnimationFrame(raf);
+      burger?.focus();
+    };
+  }, [menuOpen]);
 
   // On inner pages the nav is always in its glass state; on home it reacts to scroll.
   const navScrolled = isHome ? scrolled : true;
@@ -110,19 +126,19 @@ export function SiteNav() {
           )}
         </div>
 
-        <button className="site-nav__burger" aria-label="Open menu" onClick={() => setMenuOpen(true)}>
+        <button ref={burgerRef} className="site-nav__burger" aria-label="Open menu" aria-expanded={menuOpen} onClick={() => setMenuOpen(true)}>
           <Menu className="h-5 w-5" />
         </button>
       </div>
 
       {menuOpen && (
-        <div className="site-menu">
+        <div className="site-menu" role="dialog" aria-modal="true" aria-label="Menu">
           <div className="site-menu__top">
             <Link className="site-nav__brand" href="/" onClick={() => setMenuOpen(false)}>
               <span className="site-nav__logo"><Bolt size={16} /></span>
               <span>HookGenOS</span>
             </Link>
-            <button className="app-nav__icon" aria-label="Close menu" onClick={() => setMenuOpen(false)}>
+            <button ref={closeBtnRef} className="app-nav__icon" aria-label="Close menu" onClick={() => setMenuOpen(false)}>
               <X className="h-5 w-5" />
             </button>
           </div>

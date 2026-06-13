@@ -55,12 +55,12 @@ function LoginForm() {
               </div>
             )}
             <div className="auth__field">
-              <label className="auth__label">Email</label>
-              <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" required />
+              <label className="auth__label" htmlFor="login-email">Email</label>
+              <Input id="login-email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" required />
             </div>
             <div className="auth__field">
-              <label className="auth__label">Password</label>
-              <Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required />
+              <label className="auth__label" htmlFor="login-password">Password</label>
+              <Input id="login-password" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required />
             </div>
             <Button type="submit" variant="cta" className="w-full" disabled={loading}>
               {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Signing in...</> : 'Sign in'}

@@ -57,16 +57,16 @@ function RegisterForm() {
               </div>
             )}
             <div className="auth__field">
-              <label className="auth__label">Name <span className="text-zinc-600">(optional)</span></label>
-              <Input value={name} onChange={e => setName(e.target.value)} placeholder="Your name" />
+              <label className="auth__label" htmlFor="register-name">Name <span className="text-zinc-600">(optional)</span></label>
+              <Input id="register-name" value={name} onChange={e => setName(e.target.value)} placeholder="Your name" />
             </div>
             <div className="auth__field">
-              <label className="auth__label">Email</label>
-              <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" required />
+              <label className="auth__label" htmlFor="register-email">Email</label>
+              <Input id="register-email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" required />
             </div>
             <div className="auth__field">
-              <label className="auth__label">Password</label>
-              <Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Min. 8 characters" required />
+              <label className="auth__label" htmlFor="register-password">Password</label>
+              <Input id="register-password" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Min. 8 characters" required />
             </div>
             <Button type="submit" variant="cta" className="w-full" disabled={loading}>
               {loading ? <><Loader2 className="h-4 w-4 animate-spin" />Creating account…</> : 'Create free account'}

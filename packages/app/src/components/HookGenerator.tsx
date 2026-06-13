@@ -83,8 +83,9 @@ export function HookGenerator({ isPro = false, isAuthenticated = false }: HookGe
   return (
     <div className="gen">
       <div className="gen__field">
-        <label className="gen__label">What&apos;s your hook about?</label>
+        <label className="gen__label" htmlFor="gen-topic">What&apos;s your hook about?</label>
         <Input
+          id="gen-topic"
           inputSize="lg"
           value={topic}
           onChange={e => setTopic(e.target.value)}
@@ -104,8 +105,8 @@ export function HookGenerator({ isPro = false, isAuthenticated = false }: HookGe
           <PillSelect aria-label="Tone" size="sm" value={tone} onChange={setTone} options={TONES} />
         </div>
         <div>
-          <label className="gen__label">Niche <span style={{ color: 'var(--text-faint)' }}>(optional)</span></label>
-          <Input value={niche} onChange={e => setNiche(e.target.value)} placeholder="e.g. fitness, SaaS, cooking..." />
+          <label className="gen__label" htmlFor="gen-niche">Niche <span style={{ color: 'var(--text-subtle)' }}>(optional)</span></label>
+          <Input id="gen-niche" value={niche} onChange={e => setNiche(e.target.value)} placeholder="e.g. fitness, SaaS, cooking..." />
         </div>
       </div>
 
@@ -121,10 +122,12 @@ export function HookGenerator({ isPro = false, isAuthenticated = false }: HookGe
           />
         </div>
         {isPro && (
-          <label className="gen__ai">
+          <div className="gen__ai">
             <Switch checked={useAI} onChange={setUseAI} aria-label="AI-powered generation" />
-            <Bolt size={14} /> AI-powered
-          </label>
+            <span onClick={() => setUseAI(!useAI)} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, cursor: 'pointer' }}>
+              <Bolt size={14} /> AI-powered
+            </span>
+          </div>
         )}
         <Button variant="cta" onClick={generate} disabled={loading || !topic.trim()} className="gen__go">
           {loading ? 'Firing…' : <><Bolt size={15} /> Generate</>}
