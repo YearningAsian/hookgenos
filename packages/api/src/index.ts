@@ -8,6 +8,7 @@ import rateLimit from '@fastify/rate-limit';
 import rawBody from 'fastify-raw-body';
 import { authRoutes } from './routes/auth';
 import { hooksRoutes } from './routes/hooks';
+import { boardRoutes } from './routes/boards';
 import { billingRoutes } from './routes/billing';
 import { userRoutes } from './routes/user';
 import { adminRoutes } from './routes/admin';
@@ -70,6 +71,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(authRoutes, { prefix: '/api/auth' });
   await app.register(passwordResetRoutes, { prefix: '/api/auth' });
   await app.register(hooksRoutes, { prefix: '/api/hooks' });
+  await app.register(boardRoutes, { prefix: '/api/boards' });
   await app.register(billingRoutes, { prefix: '/api/billing' });
   await app.register(userRoutes, { prefix: '/api/user' });
   await app.register(apiKeyRoutes, { prefix: '/api/api-keys' });

@@ -1,22 +1,19 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import { Heart, Trash2, ArrowLeft, Copy, Check, Filter } from 'lucide-react';
-import { AppNav } from '@/components/AppNav';
 import { Button } from '@/components/ui/button';
 import { Bolt } from '@/components/ui/icons';
 import { PillSelect } from '@/components/ui/pill-select';
 import { PlatformBadge, TypeBadge } from '@/components/ui/type-badge';
 import { api, type GeneratedHook } from '@/lib/api';
-import { fetchCurrentUser as fetchUser } from '@/lib/auth';
+import { useStudio } from '@/components/studio/StudioProvider';
 import Link from 'next/link';
 import { PLATFORMS as BASE_PLATFORMS } from '@/lib/constants';
 
 const PLATFORMS = [{ id: '', label: 'All platforms' }, ...BASE_PLATFORMS];
 
 export default function HistoryPage() {
-  const router = useRouter();
-  const [authed, setAuthed] = useState(false);
+  const { notify } = useStudio();
   const [items, setItems] = useState<GeneratedHook[]>([]);
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
@@ -26,15 +23,7 @@ export default function HistoryPage() {
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchUser().then(u => {
-      if (!u) { router.push('/login'); return; }
-      setAuthed(true);
-    });
-  }, [router]);
-
   const load = useCallback(async () => {
-    if (!authed) return;
     setLoading(true);
     try {
       const res = await api.hooks.history({ page, platform: platform || undefined, favorites: favOnly || undefined });
@@ -44,7 +33,7 @@ export default function HistoryPage() {
     } finally {
       setLoading(false);
     }
-  }, [authed, page, platform, favOnly]);
+  }, [page, platform, favOnly]);
 
   // Fetch on mount / param change; load() sets a loading flag synchronously,
   // which this heuristic rule flags.
@@ -52,30 +41,36 @@ export default function HistoryPage() {
   useEffect(() => { load(); }, [load]);
 
   const copy = async (item: GeneratedHook) => {
-    await navigator.clipboard.writeText(item.text ?? '');
+    try { await navigator.clipboard?.writeText(item.text ?? ''); } catch { /* clipboard unavailable */ }
     setCopiedId(item.id!);
     setTimeout(() => setCopiedId(null), 2000);
   };
 
   const toggleFav = async (item: GeneratedHook) => {
-    await api.hooks.favorite(item.id!);
-    setItems(prev => prev.map(h => h.id === item.id ? { ...h, isFavorite: !h.isFavorite } : h));
+    try {
+      await api.hooks.favorite(item.id!);
+      setItems(prev => prev.map(h => h.id === item.id ? { ...h, isFavorite: !h.isFavorite } : h));
+    } catch {
+      notify('Could not update favorite', 'error');
+    }
   };
 
   const del = async (id: string) => {
-    await api.hooks.delete(id);
-    setItems(prev => prev.filter(h => h.id !== id));
-    setTotal(t => t - 1);
+    try {
+      await api.hooks.delete(id);
+      setItems(prev => prev.filter(h => h.id !== id));
+      setTotal(t => t - 1);
+    } catch {
+      notify('Could not delete', 'error');
+    }
   };
 
   return (
-    <div>
-      <AppNav />
-      <main className="page page--wide">
+    <main className="page page--wide">
         <div className="page__head" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <Link href="/dashboard">
+          <Link href="/dashboard/generate">
             <Button variant="ghost" size="sm">
-              <ArrowLeft className="h-4 w-4" />Back
+              <ArrowLeft className="h-4 w-4" />Generate
             </Button>
           </Link>
           <div>
@@ -118,7 +113,7 @@ export default function HistoryPage() {
         ) : items.length === 0 ? (
           <div className="py-16 text-center">
             <p className="text-zinc-500">No hooks yet.{' '}
-              <Link href="/dashboard" className="text-brand-400 hover:text-brand-300">Generate some →</Link>
+              <Link href="/dashboard/generate" className="text-brand-400 hover:text-brand-300">Generate some →</Link>
             </p>
           </div>
         ) : (
@@ -186,7 +181,6 @@ export default function HistoryPage() {
             </Button>
           </div>
         )}
-      </main>
-    </div>
+    </main>
   );
 }
