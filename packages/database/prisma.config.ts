@@ -1,7 +1,12 @@
 // Prisma 7 CLI configuration. The CLI no longer reads .env files on its own,
 // so dotenv must be loaded here for DATABASE_URL to be available to Migrate.
-import 'dotenv/config';
+import { config } from 'dotenv';
+import { resolve } from 'path';
 import { defineConfig } from 'prisma/config';
+
+// Try the package-local .env first; fall back to the monorepo root .env.
+config();
+config({ path: resolve(__dirname, '../../.env'), override: false });
 
 export default defineConfig({
   schema: 'prisma/schema.prisma',
