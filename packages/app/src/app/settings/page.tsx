@@ -1,11 +1,12 @@
 'use client';
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, Mail, Zap, AlertTriangle, ExternalLink, Save } from 'lucide-react';
-import { Navbar } from '@/components/Navbar';
+import { User as UserIcon, AlertTriangle, Save } from 'lucide-react';
+import { AppNav } from '@/components/AppNav';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Bolt } from '@/components/ui/icons';
 import { useToast } from '@/components/ui/toast';
 import { api } from '@/lib/api';
 import { fetchCurrentUser } from '@/lib/auth';
@@ -86,33 +87,33 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#09090b]">
-        <Zap className="h-8 w-8 text-brand-500 animate-pulse" />
+      <div className="flex min-h-screen items-center justify-center">
+        <span className="text-brand-500" style={{ animation: 'hg-pulse 1.4s var(--ease-in-out) infinite' }}><Bolt size={32} /></span>
       </div>
     );
   }
 
+  const isPro = userData?.plan === 'PRO';
+
   return (
-    <div className="min-h-screen bg-[#09090b]">
-      <Navbar />
-      <main className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-zinc-100">Settings</h1>
-          <p className="mt-1 text-sm text-zinc-500">Manage your account preferences</p>
+    <div>
+      <AppNav />
+      <main className="page">
+        <div className="page__head">
+          <h1 className="page__title">Settings</h1>
+          <p className="page__sub">Manage your account preferences</p>
         </div>
 
         {/* Profile section */}
-        <section className="mb-6 rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6">
-          <h2 className="mb-5 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-zinc-400">
-            <User className="h-4 w-4" />
+        <section className="section">
+          <h2 className="section__h">
+            <UserIcon className="h-4 w-4" />
             Profile
           </h2>
           <div className="space-y-4">
             <div>
-              <label htmlFor="name-input" className="mb-1.5 block text-sm font-medium text-zinc-300">
-                Display name
-              </label>
-              <div className="flex gap-2">
+              <label htmlFor="name-input" className="auth__label">Display name</label>
+              <div className="field-row">
                 <Input
                   id="name-input"
                   value={name}
@@ -124,8 +125,8 @@ export default function SettingsPage() {
                 <Button
                   onClick={handleSaveName}
                   disabled={saving || name.trim() === (userData?.name ?? '')}
+                  variant="default"
                   size="sm"
-                  className="gap-1.5 shrink-0"
                 >
                   <Save className="h-3.5 w-3.5" />
                   {saving ? 'Saving…' : 'Save'}
@@ -134,12 +135,7 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-zinc-300">
-                <span className="flex items-center gap-1.5">
-                  <Mail className="h-3.5 w-3.5 text-zinc-500" />
-                  Email
-                </span>
-              </label>
+              <label className="auth__label">Email</label>
               <Input
                 value={userData?.email ?? ''}
                 readOnly
@@ -151,49 +147,41 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* Plan & stats section */}
-        <section className="mb-6 rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6">
-          <h2 className="mb-5 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-zinc-400">
-            <Zap className="h-4 w-4" />
-            Plan & Usage
+        {/* Plan & usage section */}
+        <section className="section">
+          <h2 className="section__h">
+            <Bolt size={16} />
+            Plan &amp; usage
           </h2>
-          <div className="flex items-center justify-between">
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-zinc-400">Current plan</span>
-                <Badge variant={userData?.plan === 'PRO' ? 'pro' : 'secondary'}>
-                  {userData?.plan === 'PRO' ? '✦ Pro' : 'Free'}
-                </Badge>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-zinc-400">Hooks generated</span>
-                <span className="text-sm font-semibold text-zinc-100">
-                  {userData?.hooksGenerated ?? 0}
-                </span>
-              </div>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-zinc-400">Current plan</span>
+              <Badge variant={isPro ? 'pro' : 'secondary'}>{isPro ? '✦ Pro' : 'Free'}</Badge>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-zinc-400">Hooks generated</span>
+              <span className="text-sm font-semibold text-zinc-100">{userData?.hooksGenerated ?? 0}</span>
             </div>
           </div>
 
           {userData?.plan === 'FREE' && (
-            <div className="mt-5 rounded-xl border border-brand-800/50 bg-brand-900/20 px-4 py-3 flex items-center justify-between">
+            <div className="app__upsell mt-5">
               <div>
-                <p className="text-sm font-medium text-brand-200">Upgrade to Pro</p>
-                <p className="text-xs text-zinc-500 mt-0.5">Unlimited hooks · AI generation · $9/month</p>
+                <p className="app__upsell-t">Upgrade to Pro for unlimited hooks + AI generation</p>
+                <p className="app__upsell-s">$9/month · Cancel anytime</p>
               </div>
               <Link href="/pricing">
-                <Button size="sm" className="gap-1.5 shrink-0">
-                  Upgrade <ExternalLink className="h-3.5 w-3.5" />
-                </Button>
+                <Button size="sm">Upgrade →</Button>
               </Link>
             </div>
           )}
         </section>
 
         {/* Danger zone */}
-        <section className="rounded-2xl border border-red-900/50 bg-zinc-900/40 p-6">
-          <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-red-400">
+        <section className="section section--danger">
+          <h2 className="section__h">
             <AlertTriangle className="h-4 w-4" />
-            Danger Zone
+            Danger zone
           </h2>
           <div className="flex items-start justify-between gap-4">
             <div>
@@ -203,11 +191,10 @@ export default function SettingsPage() {
               </p>
             </div>
             <Button
-              variant="outline"
+              variant="destructive"
               size="sm"
               disabled={deleting}
               onClick={handleDeleteAccount}
-              className="shrink-0 border-red-800/60 text-red-400 hover:bg-red-900/30 hover:text-red-300"
             >
               {deleting ? 'Deleting…' : 'Delete account'}
             </Button>
