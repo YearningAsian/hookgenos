@@ -68,7 +68,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 <ToastPrimitive.Description className="mt-0.5 text-xs text-zinc-400">{t.description}</ToastPrimitive.Description>
               )}
             </div>
-            <ToastPrimitive.Close className="shrink-0 rounded p-1 text-zinc-500 hover:text-zinc-300 transition-colors">
+            <ToastPrimitive.Close aria-label="Dismiss notification" className="shrink-0 rounded p-1 text-zinc-500 hover:text-zinc-300 transition-colors">
               <X className="h-3.5 w-3.5" />
             </ToastPrimitive.Close>
           </ToastPrimitive.Root>

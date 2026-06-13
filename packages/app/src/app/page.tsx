@@ -1,219 +1,135 @@
 import Link from 'next/link';
-import { Zap, ArrowRight, Check, Star, TrendingUp, Clock, Users, Sparkles, Code2, Shield } from 'lucide-react';
+import { TrendingUp, Sparkles, Clock, Code2, Shield, Check } from 'lucide-react';
 import { GithubIcon } from '@/components/ui/github-icon';
-import { Navbar } from '@/components/Navbar';
+import { Bolt } from '@/components/ui/icons';
+import { SiteNav } from '@/components/SiteNav';
+import { TypingHeadline } from '@/components/TypingHeadline';
 import { Button } from '@/components/ui/button';
+import { Card, CardTitle, CardDescription } from '@/components/ui/card';
 import { HookGenerator } from '@/components/HookGenerator';
 
+const GITHUB_URL = process.env.NEXT_PUBLIC_GITHUB_URL || 'https://github.com/YearningAsian/hookgenos';
+
 const FEATURES = [
-  { icon: TrendingUp, title: 'Daily Trending Hooks', desc: 'Hooks extracted from viral YouTube & Reddit content, scored by AI. Updated every 24 hours.' },
-  { icon: Zap, title: '60+ Proven Templates', desc: 'Curiosity gaps, FOMO, contrarian, pain points, story arcs — every formula that stops the scroll.' },
-  { icon: Sparkles, title: 'AI-Powered Generation', desc: 'GPT-4o-mini integration for truly unique hooks tailored to your exact topic and tone.' },
-  { icon: Clock, title: 'Hook History', desc: 'Every hook you\'ve ever generated, searchable and filterable. Never lose a great idea.' },
-  { icon: Code2, title: 'Self-Hostable', desc: 'Run it on your own server. Docker Compose up and you\'re live. Full control over your data.' },
-  { icon: Shield, title: 'Open Source Core', desc: 'MIT licensed. Inspect the formulas, contribute improvements, build on top of it.' },
+  { icon: TrendingUp, title: 'Daily trending hooks', desc: 'Hooks extracted from viral YouTube & Reddit content, scored by AI. Updated every 24 hours.' },
+  { icon: Bolt, title: '60+ proven templates', desc: 'Curiosity gaps, FOMO, contrarian, pain points, story arcs — every formula that stops the scroll.' },
+  { icon: Sparkles, title: 'AI-powered generation', desc: 'GPT-4o-mini integration for truly unique hooks tailored to your exact topic and tone.' },
+  { icon: Clock, title: 'Hook history', desc: "Every hook you've ever generated, searchable and filterable. Never lose a great idea." },
+  { icon: Code2, title: 'Self-hostable', desc: "Run it on your own server. Docker Compose up and you're live. Full control over your data." },
+  { icon: Shield, title: 'Open source core', desc: 'MIT licensed. Inspect the formulas, contribute improvements, build on top of it.' },
 ];
 
 const PRICING = [
   {
-    name: 'Free',
-    price: '$0',
-    period: 'forever',
-    desc: 'Perfect for getting started',
-    features: ['10 hooks per day', '6 platforms', '60+ templates', 'Hook history (30 days)', 'Copy to clipboard', 'Self-host friendly'],
-    cta: 'Get Started',
-    href: '/register',
-    highlight: false,
+    name: 'Free', price: '$0', period: 'forever', highlight: false, cta: 'Get started free', href: '/register',
+    variant: 'outline' as const,
+    features: ['10 hooks per day', '6 platforms', '60+ templates', 'History (30 days)', 'Self-host friendly'],
   },
   {
-    name: 'Pro',
-    price: '$9',
-    period: '/month',
-    desc: 'For serious creators & marketers',
-    features: ['Unlimited hooks', 'All platforms', 'AI-powered generation', 'Unlimited history', 'Priority support', 'Early access to features'],
-    cta: 'Start Pro',
-    href: '/register?plan=pro',
-    highlight: true,
+    name: 'Pro', price: '$9', period: '/month', highlight: true, cta: 'Start Pro', href: '/register?plan=pro',
+    variant: 'cta' as const,
+    features: ['Unlimited hooks', 'All platforms', 'AI-powered generation', 'Unlimited history', 'Priority support', 'Early access'],
   },
-];
-
-const HOOK_EXAMPLES = [
-  { text: 'Stop scrolling — this is the advice I wish I had at 22', type: 'FOMO', platform: 'TikTok', score: 94 },
-  { text: 'Unpopular opinion: working harder is actually making you worse at your job', type: 'Contrarian', platform: 'LinkedIn', score: 91 },
-  { text: 'The one thing nobody tells you about building an audience', type: 'Curiosity', platform: 'Instagram', score: 88 },
 ];
 
 export default function HomePage() {
   return (
-    <div className="flex min-h-screen flex-col bg-[#09090b]">
-      <Navbar />
+    <>
+      <SiteNav />
 
       {/* Hero */}
-      <section className="relative overflow-hidden px-4 pt-20 pb-24 sm:pt-28 sm:pb-32">
-        {/* Background glow */}
-        <div className="pointer-events-none absolute inset-0 flex items-start justify-center">
-          <div className="h-[600px] w-[600px] rounded-full bg-brand-600/10 blur-[120px]" />
-        </div>
-
-        <div className="relative mx-auto max-w-4xl text-center">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand-800/60 bg-brand-900/30 px-4 py-1.5 text-sm text-brand-300">
-            <span className="h-1.5 w-1.5 rounded-full bg-brand-400 animate-pulse" />
+      <section className="hero" id="top">
+        <div className="hero__glow" />
+        <div className="hero__inner">
+          <div className="hero__badge">
+            <span className="hero__dot" />
             Open source · MIT License
-            <a href="https://github.com/YearningAsian/hookgenos" className="ml-1 flex items-center gap-1 text-brand-400 hover:text-brand-300">
-              <GithubIcon className="h-3.5 w-3.5" />Star on GitHub
+            <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className="hero__star">
+              <GithubIcon className="h-[13px] w-[13px]" /> Star on GitHub
             </a>
           </div>
-
-          <h1 className="mb-6 text-5xl font-bold tracking-tight text-white sm:text-6xl lg:text-7xl">
-            Generate hooks that{' '}
-            <span className="bg-gradient-to-r from-brand-400 to-purple-400 bg-clip-text text-transparent">
-              stop the scroll
-            </span>
+          <h1 className="hero__title">
+            Generate hooks that<br /><TypingHeadline />
           </h1>
-
-          <p className="mx-auto mb-8 max-w-2xl text-lg text-zinc-400 sm:text-xl">
+          <p className="hero__sub">
             60+ psychological hook formulas for TikTok, Instagram, YouTube, LinkedIn and more.
             Open source, self-hostable, and optionally AI-powered.
           </p>
-
-          <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-            <Link href="/register">
-              <Button size="lg" className="gap-2 bg-brand-600 hover:bg-brand-700 h-12 px-7 text-base">
-                Start generating free <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-            <a href="https://github.com/YearningAsian/hookgenos" target="_blank" rel="noopener noreferrer">
-              <Button variant="outline" size="lg" className="gap-2 h-12 px-7 text-base">
-                <GithubIcon className="h-4 w-4" />View on GitHub
-              </Button>
+          <div className="hero__cta">
+            <Link href="/register"><Button variant="cta" size="lg" className="hg-btn--breathe"><Bolt size={16} /> Start generating free</Button></Link>
+            <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
+              <Button variant="outline" size="lg"><GithubIcon className="h-4 w-4" /> View on GitHub</Button>
             </a>
           </div>
-
-          <p className="mt-4 text-sm text-zinc-600">No credit card required · 10 free hooks/day</p>
+          <p className="hero__fine">No credit card required · 10 free hooks/day</p>
         </div>
       </section>
 
-      {/* Live Demo */}
-      <section className="px-4 pb-24">
-        <div className="mx-auto max-w-3xl">
-          <div className="mb-4 text-center">
-            <span className="text-sm text-zinc-500">Try it now — no account needed</span>
-          </div>
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6 sm:p-8">
-            <HookGenerator isAuthenticated={false} isPro={false} />
-          </div>
-        </div>
-      </section>
-
-      {/* Example hooks */}
-      <section className="px-4 pb-24">
-        <div className="mx-auto max-w-5xl">
-          <div className="mb-10 text-center">
-            <h2 className="text-2xl font-bold text-zinc-100">What great hooks look like</h2>
-            <p className="mt-2 text-zinc-500">Hooks backed by research into what actually performs</p>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-3">
-            {HOOK_EXAMPLES.map((h, i) => (
-              <div key={i} className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-5">
-                <p className="mb-4 text-base font-medium text-zinc-100 leading-relaxed">&ldquo;{h.text}&rdquo;</p>
-                <div className="flex items-center justify-between">
-                  <div className="flex gap-2">
-                    <span className="rounded-full border border-brand-800 bg-brand-900/50 px-2.5 py-0.5 text-xs text-brand-300">{h.type}</span>
-                    <span className="rounded-full border border-zinc-700 bg-zinc-800 px-2.5 py-0.5 text-xs text-zinc-400">{h.platform}</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-xs text-yellow-400">
-                    <Zap className="h-3 w-3" />{h.score}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+      {/* Live demo */}
+      <section className="demo" id="how">
+        <p className="demo__eyebrow">Try it now — no account needed</p>
+        <div className="demo__panel">
+          <HookGenerator isAuthenticated={false} isPro={false} />
         </div>
       </section>
 
       {/* Features */}
-      <section id="features" className="px-4 pb-24">
-        <div className="mx-auto max-w-5xl">
-          <div className="mb-10 text-center">
-            <h2 className="text-2xl font-bold text-zinc-100">Everything you need to hook your audience</h2>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map((f, i) => (
-              <div key={i} className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
-                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-brand-900/50 border border-brand-800">
-                  <f.icon className="h-5 w-5 text-brand-400" />
-                </div>
-                <h3 className="mb-2 font-semibold text-zinc-100">{f.title}</h3>
-                <p className="text-sm text-zinc-500 leading-relaxed">{f.desc}</p>
-              </div>
-            ))}
-          </div>
+      <section className="features" id="features">
+        <div className="sec-head">
+          <span className="sec-eyebrow">Built to convert</span>
+          <h2 className="sec-title">Everything you need to hook your audience</h2>
+        </div>
+        <div className="features__grid">
+          {FEATURES.map(f => (
+            <Card key={f.title} hover pad>
+              <div className="features__icon"><f.icon className="h-[18px] w-[18px]" /></div>
+              <CardTitle>{f.title}</CardTitle>
+              <CardDescription>{f.desc}</CardDescription>
+            </Card>
+          ))}
         </div>
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="px-4 pb-24">
-        <div className="mx-auto max-w-4xl">
-          <div className="mb-10 text-center">
-            <h2 className="text-2xl font-bold text-zinc-100">Simple, transparent pricing</h2>
-            <p className="mt-2 text-zinc-500">Start free. Upgrade when you need more.</p>
-          </div>
-          <div className="grid gap-6 sm:grid-cols-2 max-w-2xl mx-auto">
-            {PRICING.map((p) => (
-              <div key={p.name} className={`rounded-2xl border p-8 ${p.highlight ? 'border-brand-600 bg-brand-900/20 relative' : 'border-zinc-800 bg-zinc-900/50'}`}>
-                {p.highlight && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-brand-600 px-4 py-1 text-xs font-semibold text-white">
-                    Most Popular
-                  </div>
-                )}
-                <div className="mb-6">
-                  <div className="text-sm font-medium text-zinc-400">{p.name}</div>
-                  <div className="mt-1 flex items-baseline gap-1">
-                    <span className="text-4xl font-bold text-zinc-100">{p.price}</span>
-                    <span className="text-zinc-500 text-sm">{p.period}</span>
-                  </div>
-                  <p className="mt-1 text-sm text-zinc-500">{p.desc}</p>
-                </div>
-                <ul className="mb-6 space-y-2.5">
-                  {p.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2.5 text-sm text-zinc-300">
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand-400" />{f}
-                    </li>
-                  ))}
-                </ul>
-                <Link href={p.href}>
-                  <Button className={`w-full ${p.highlight ? 'bg-brand-600 hover:bg-brand-700' : ''}`} variant={p.highlight ? 'default' : 'outline'}>
-                    {p.cta}
-                  </Button>
-                </Link>
-              </div>
-            ))}
-          </div>
-
-          <p className="mt-6 text-center text-sm text-zinc-600">
-            Self-hosting? Run it for free on your own infrastructure.{' '}
-            <a href="https://github.com/YearningAsian/hookgenos" className="text-zinc-500 hover:text-zinc-300 underline">See the docs →</a>
-          </p>
+      <section className="pricing" id="pricing">
+        <div className="sec-head">
+          <span className="sec-eyebrow">Pricing</span>
+          <h2 className="sec-title">Simple, transparent pricing</h2>
+          <p className="sec-sub">Start free. Upgrade when you need more.</p>
         </div>
+        <div className="pricing__grid">
+          {PRICING.map(p => (
+            <div key={p.name} className={`price-card ${p.highlight ? 'is-pro' : ''}`}>
+              {p.highlight && <span className="price-card__ribbon">Most Popular</span>}
+              <div className="price-card__name">{p.name}</div>
+              <div className="price-card__amount"><span>{p.price}</span><em>{p.period}</em></div>
+              <ul className="price-card__list">
+                {p.features.map(f => (
+                  <li key={f}><i className={p.highlight ? 'on' : ''}><Check className="h-4 w-4" /></i>{f}</li>
+                ))}
+              </ul>
+              <Link href={p.href} className="block"><Button variant={p.variant} className="w-full">{p.cta}</Button></Link>
+            </div>
+          ))}
+        </div>
+        <p className="pricing__note">
+          Self-hosting? Run it for free on your own infrastructure.{' '}
+          <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">See the docs →</a>
+        </p>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-zinc-800 py-10 px-4">
-        <div className="mx-auto max-w-5xl flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-zinc-400">
-            <div className="flex h-6 w-6 items-center justify-center rounded bg-brand-600">
-              <Zap className="h-3.5 w-3.5 text-white" />
-            </div>
-            <span className="text-sm font-medium">HookGenOS</span>
-            <span className="text-zinc-600 text-sm">· MIT License</span>
-          </div>
-          <div className="flex items-center gap-6 text-sm text-zinc-500">
-            <a href="https://github.com/YearningAsian/hookgenos" className="hover:text-zinc-300 flex items-center gap-1.5"><GithubIcon className="h-4 w-4" />GitHub</a>
-            <Link href="/pricing" className="hover:text-zinc-300">Pricing</Link>
-            <Link href="/login" className="hover:text-zinc-300">Sign in</Link>
-          </div>
+      <footer className="site-footer">
+        <div className="site-footer__brand">
+          <span className="site-nav__logo" style={{ width: 24, height: 24 }}><Bolt size={13} /></span>
+          HookGenOS <span className="site-footer__dim">· MIT License</span>
+        </div>
+        <div className="site-footer__links">
+          <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer"><GithubIcon className="h-4 w-4" /> GitHub</a>
+          <Link href="/pricing">Pricing</Link>
+          <Link href="/login">Sign in</Link>
         </div>
       </footer>
-    </div>
+    </>
   );
 }
