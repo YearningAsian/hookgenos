@@ -6,6 +6,10 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
     },
+    "@hookgenos/database#build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", "src/generated/**"]
+    },
     "dev": {
       "cache": false,
       "persistent": true
@@ -13,6 +17,10 @@
     "lint": { "outputs": [] },
     "typecheck": {
       "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "@hookgenos/database#typecheck": {
+      "dependsOn": ["build"],
       "outputs": []
     },
     "test": { "outputs": ["coverage/**"] },
