@@ -2,6 +2,11 @@ import type { FastifyInstance } from 'fastify';
 import Stripe from 'stripe';
 import { prisma } from '../lib/prisma';
 import { authenticate } from '../middleware/auth';
+import { claimOnce, releaseClaim } from '../lib/redis';
+
+// Stripe retries a webhook for up to ~3 days; keep idempotency keys at least
+// that long so a retried event is never processed twice.
+const WEBHOOK_IDEMPOTENCY_TTL = 4 * 24 * 60 * 60;
 
 export async function billingRoutes(app: FastifyInstance) {
   // No apiVersion override — use the version pinned by the installed SDK.
@@ -16,7 +21,9 @@ export async function billingRoutes(app: FastifyInstance) {
       return reply.code(400).send({ error: 'Stripe not configured' });
     }
 
-    const sig = req.headers['stripe-signature'] as string;
+    const sigHeader = req.headers['stripe-signature'];
+    const sig = Array.isArray(sigHeader) ? sigHeader[0] : sigHeader;
+    if (!sig) return reply.code(400).send({ error: 'Missing signature' });
 
     // rawBody is set by @fastify/rawbody — required for Stripe signature verification
     const rawPayload = req.rawBody;
@@ -31,30 +38,47 @@ export async function billingRoutes(app: FastifyInstance) {
       return reply.code(400).send({ error: 'Invalid webhook signature' });
     }
 
-    switch (event.type) {
-      case 'checkout.session.completed': {
-        const session = event.data.object;
-        if (session.client_reference_id) {
-          await prisma.user.update({
-            where: { id: session.client_reference_id },
-            data: {
-              plan: 'PRO',
-              stripeCustomerId: session.customer as string,
-              stripeSubscriptionId: session.subscription as string,
-            },
-          });
+    // Idempotency: Stripe delivers at-least-once and retries on any non-2xx or
+    // timeout. Claim the event id once; if it was already processed, ack with
+    // 200 (so Stripe stops retrying) without re-running the side effects.
+    const idempotencyKey = `stripe:evt:${event.id}`;
+    const fresh = await claimOnce(idempotencyKey, WEBHOOK_IDEMPOTENCY_TTL);
+    if (!fresh) {
+      return { received: true, duplicate: true };
+    }
+
+    try {
+      switch (event.type) {
+        case 'checkout.session.completed': {
+          const session = event.data.object;
+          if (session.client_reference_id) {
+            await prisma.user.update({
+              where: { id: session.client_reference_id },
+              data: {
+                plan: 'PRO',
+                stripeCustomerId: session.customer as string,
+                stripeSubscriptionId: session.subscription as string,
+              },
+            });
+          }
+          break;
         }
-        break;
+        case 'customer.subscription.deleted':
+        case 'customer.subscription.paused': {
+          const sub = event.data.object;
+          await prisma.user.updateMany({
+            where: { stripeSubscriptionId: sub.id },
+            data: { plan: 'FREE', stripeSubscriptionId: null },
+          });
+          break;
+        }
       }
-      case 'customer.subscription.deleted':
-      case 'customer.subscription.paused': {
-        const sub = event.data.object;
-        await prisma.user.updateMany({
-          where: { stripeSubscriptionId: sub.id },
-          data: { plan: 'FREE', stripeSubscriptionId: null },
-        });
-        break;
-      }
+    } catch (err) {
+      // Processing failed after we claimed the event — release the claim so a
+      // Stripe retry can re-run the side effects instead of being deduped away.
+      await releaseClaim(idempotencyKey);
+      req.log.error({ err, eventId: event.id }, 'stripe webhook processing failed');
+      return reply.code(500).send({ error: 'Webhook processing failed' });
     }
 
     return { received: true };
@@ -64,8 +88,7 @@ export async function billingRoutes(app: FastifyInstance) {
     if (!stripe) {
       return reply.code(400).send({ error: 'Billing not configured on this instance' });
     }
-    const payload = req.user as { sub: string; email: string };
-    const user = await prisma.user.findUnique({ where: { id: payload.sub } });
+    const user = await prisma.user.findUnique({ where: { id: req.user.sub } });
     if (!user) return reply.code(404).send({ error: 'User not found' });
     if (user.plan === 'PRO') return reply.code(400).send({ error: 'Already on Pro plan' });
 
@@ -87,8 +110,7 @@ export async function billingRoutes(app: FastifyInstance) {
 
   app.post('/create-portal', { preHandler: [authenticate] }, async (req, reply) => {
     if (!stripe) return reply.code(400).send({ error: 'Billing not configured' });
-    const payload = req.user as { sub: string };
-    const user = await prisma.user.findUnique({ where: { id: payload.sub } });
+    const user = await prisma.user.findUnique({ where: { id: req.user.sub } });
     if (!user?.stripeCustomerId) {
       return reply.code(400).send({ error: 'No billing account found' });
     }

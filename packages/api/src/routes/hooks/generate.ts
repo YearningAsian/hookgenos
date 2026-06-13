@@ -2,6 +2,7 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { generateHooks } from '@hookgenos/core';
 import { prisma } from '../../lib/prisma';
+import { parseOr400 } from '../../lib/validation';
 
 const generateSchema = z.object({
   topic: z.string().min(1).max(200),
@@ -15,15 +16,8 @@ const generateSchema = z.object({
 const FREE_DAILY_LIMIT = 10;
 
 export async function generateHandler(req: FastifyRequest, reply: FastifyReply) {
-  let body;
-  try {
-    body = generateSchema.parse(req.body);
-  } catch (err) {
-    if (err instanceof z.ZodError) {
-      return reply.code(400).send({ error: 'Validation error', details: err.issues });
-    }
-    throw err;
-  }
+  const body = parseOr400(generateSchema, req.body, reply);
+  if (!body) return reply;
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);

@@ -84,16 +84,32 @@ Rules:
     max_completion_tokens: 2000,
   });
 
-  const parsed = JSON.parse(response.choices[0].message.content || '{"hooks":[]}');
-  const hooks: any[] = Array.isArray(parsed) ? parsed : (parsed.hooks || []);
+  const parsed: unknown = JSON.parse(response.choices[0]?.message?.content || '{"hooks":[]}');
+  // The model may return an array directly, an object with a `hooks` array, or
+  // (rarely) literal null / a malformed shape — guard every case so a bad
+  // response triggers the template fallback instead of throwing.
+  const rawHooks: unknown[] = Array.isArray(parsed)
+    ? parsed
+    : (parsed && typeof parsed === 'object' && Array.isArray((parsed as { hooks?: unknown }).hooks)
+        ? (parsed as { hooks: unknown[] }).hooks
+        : []);
 
-  return hooks.map((h) => ({
-    text: h.text || '',
-    type: (h.type || 'curiosity') as HookType,
-    score: Math.min(100, Math.max(0, h.score || 80)),
-    platform: opts.platform,
-    explanation: h.explanation,
-  })).filter((h) => h.text.length > 0);
+  return rawHooks
+    .filter((h): h is Record<string, unknown> => !!h && typeof h === 'object')
+    .map((h) => {
+      // Coerce score defensively: the model sometimes returns a string or omits
+      // it. Number(undefined)/Number('x') is NaN, so fall back to 80.
+      const rawScore = Number(h.score);
+      const score = Number.isFinite(rawScore) ? Math.min(100, Math.max(0, rawScore)) : 80;
+      return {
+        text: typeof h.text === 'string' ? h.text : '',
+        type: (typeof h.type === 'string' ? h.type : 'curiosity') as HookType,
+        score,
+        platform: opts.platform,
+        explanation: typeof h.explanation === 'string' ? h.explanation : undefined,
+      };
+    })
+    .filter((h) => h.text.length > 0);
 }
 
 export async function generateHooks(opts: GenerateOptions): Promise<Hook[]> {

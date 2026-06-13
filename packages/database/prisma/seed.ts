@@ -1,7 +1,14 @@
-import 'dotenv/config';
+import { config } from 'dotenv';
+import { resolve } from 'node:path';
 import { randomBytes } from 'node:crypto';
-import { PrismaClient } from '../src/generated/prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
+// Import from compiled dist — the generated TypeScript files contain CJS .js
+// references that ts-node cannot resolve at runtime from the src path.
+import { PrismaClient, PrismaPg } from '../dist/index.js';
+
+// Load package-local .env first; fall back to monorepo root.
+// __dirname is packages/database/prisma — 3 levels up to reach monorepo root.
+config();
+config({ path: resolve(__dirname, '../../../.env'), override: false });
 import bcrypt from 'bcryptjs';
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL ?? '' });
