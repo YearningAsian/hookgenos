@@ -1,16 +1,27 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
-import { TrendingUp, Copy, Check, Zap, Lock, Sparkles } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { TrendingUp, Copy, Check, RotateCw, Sparkles } from 'lucide-react';
+import { Button } from './ui/button';
+import { PillSelect } from './ui/pill-select';
+import { ScoreMeter } from './ui/score-meter';
+import { TypeBadge, PlatformBadge } from './ui/type-badge';
+import { Bolt } from './ui/icons';
 import { api, type TrendingHook } from '@/lib/api';
-import { PLATFORMS as BASE_PLATFORMS, TYPE_COLORS, SOURCE_ICONS } from '@/lib/constants';
+import { PLATFORMS as BASE_PLATFORMS, SOURCE_ICONS } from '@/lib/constants';
 
-// Filter UI excludes 'general' and adds an "All" option
+// Filter UI excludes 'general' and adds an "All" option.
 const PLATFORMS = [{ id: '', label: 'All' }, ...BASE_PLATFORMS.filter(p => p.id !== 'general')];
 
 interface TrendingHooksProps {
   isPro: boolean;
   isAuthenticated: boolean;
+}
+
+function formatViews(v: number | null): string | null {
+  if (!v) return null;
+  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M views`;
+  if (v >= 1_000) return `${(v / 1_000).toFixed(0)}k views`;
+  return `${v} views`;
 }
 
 export function TrendingHooks({ isPro, isAuthenticated }: TrendingHooksProps) {
@@ -26,159 +37,99 @@ export function TrendingHooks({ isPro, isAuthenticated }: TrendingHooksProps) {
     setLoading(true);
     setError('');
     try {
-      const res = await api.hooks.trending({
-        platform: platform || undefined,
-        limit: isPro ? 20 : 5,
-      });
+      const res = await api.hooks.trending({ platform: platform || undefined, limit: isPro ? 20 : 5 });
       setHooks(res.hooks);
       setPlanLimit(res.planLimit);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load trending hooks');
+    } catch (err: unknown) {
+      setError((err as { message?: string }).message || 'Failed to load trending hooks');
     } finally {
       setLoading(false);
     }
   }, [isAuthenticated, isPro, platform]);
 
-  // Fetch on mount / param change; load() sets a loading flag synchronously,
-  // which this heuristic rule flags.
+  // Fetch on mount / param change; load() sets a loading flag synchronously.
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load(); }, [load]);
 
   const copy = async (hook: TrendingHook) => {
-    await navigator.clipboard.writeText(hook.text);
+    try { await navigator.clipboard.writeText(hook.text); } catch { /* ignore */ }
     setCopiedId(hook.id);
-    setTimeout(() => setCopiedId(null), 2000);
+    setTimeout(() => setCopiedId(null), 1800);
   };
 
   if (!isAuthenticated) {
     return (
-      <div className="py-12 text-center">
+      <div style={{ textAlign: 'center', padding: '48px 0' }}>
         <TrendingUp className="mx-auto mb-3 h-10 w-10 text-brand-500" />
-        <p className="font-semibold text-zinc-100">Trending hooks, updated daily</p>
-        <p className="mt-1 text-sm text-zinc-500">Sign up to see what&apos;s going viral right now</p>
-        <a href="/register" className="mt-4 inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 transition-colors">
-          Get started free
+        <p className="app__limit-t">Trending hooks, updated daily</p>
+        <p className="app__limit-s">Sign up to see what&apos;s going viral right now</p>
+        <a href="/register" className="hg-btn hg-btn--cta hg-btn--md" style={{ marginTop: 16, display: 'inline-flex' }}>
+          <Bolt size={15} /> Get started free
         </a>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div>
       {/* Platform filter */}
-      <div className="flex flex-wrap gap-2">
-        {PLATFORMS.map(p => (
-          <button
-            key={p.id}
-            onClick={() => setPlatform(p.id)}
-            className={cn(
-              'rounded-lg border px-3 py-1.5 text-xs font-medium transition-all',
-              platform === p.id
-                ? 'border-brand-500 bg-brand-900/50 text-brand-300'
-                : 'border-zinc-700 bg-zinc-900 text-zinc-400 hover:border-zinc-600 hover:text-zinc-300'
-            )}
-          >
-            {p.label}
-          </button>
-        ))}
-        <button
-          onClick={load}
-          className="ml-auto rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
-        >
-          ↻ Refresh
-        </button>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
+        <PillSelect aria-label="Platform filter" size="sm" value={platform} onChange={setPlatform} options={PLATFORMS} />
+        <Button variant="ghost" size="sm" onClick={load} style={{ marginLeft: 'auto' }}>
+          <RotateCw className="h-3.5 w-3.5" /> Refresh
+        </Button>
       </div>
 
       {/* Free plan teaser */}
       {!isPro && planLimit && (
-        <div className="flex items-start gap-3 rounded-xl border border-brand-800/60 bg-brand-900/20 p-4">
-          <Sparkles className="mt-0.5 h-4 w-4 text-brand-400 shrink-0" />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-brand-200">Showing {planLimit} of many trending hooks</p>
-            <p className="text-xs text-zinc-500 mt-0.5">Upgrade to Pro for full access + niche filtering</p>
+        <div className="app__upsell" style={{ marginBottom: 16 }}>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+            <Sparkles className="mt-0.5 h-4 w-4 text-brand-400 shrink-0" />
+            <div>
+              <p className="app__upsell-t">Showing {planLimit} of many trending hooks</p>
+              <p className="app__upsell-s">Upgrade to Pro for full access + niche filtering</p>
+            </div>
           </div>
-          <a href="/pricing" className="shrink-0 rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-700 transition-colors">
-            Upgrade
-          </a>
+          <a href="/pricing" className="hg-btn hg-btn--cta hg-btn--sm">Upgrade</a>
         </div>
       )}
 
-      {error && (
-        <div className="rounded-lg border border-red-800 bg-red-900/30 px-4 py-3 text-sm text-red-300">{error}</div>
-      )}
+      {error && <div className="app__notice app__notice--error" style={{ marginBottom: 16 }}>{error}</div>}
 
-      {/* Hooks list */}
       {loading ? (
-        <div className="space-y-3">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-20 rounded-xl border border-zinc-800 bg-zinc-900/50 animate-pulse" />
-          ))}
+        <div className="app__trending">
+          {[...Array(5)].map((_, i) => <div key={i} className="hg-skel" style={{ height: 96 }} />)}
         </div>
       ) : hooks.length === 0 ? (
-        <div className="py-12 text-center">
-          <p className="text-zinc-500">No trending hooks yet.</p>
-          <p className="mt-1 text-xs text-zinc-600">The collection pipeline runs daily — check back tomorrow.</p>
+        <div style={{ textAlign: 'center', padding: '48px 0' }}>
+          <p style={{ color: 'var(--text-subtle)' }}>No trending hooks yet.</p>
+          <p style={{ color: 'var(--text-faint)', fontSize: 12, marginTop: 4 }}>The collection pipeline runs daily — check back tomorrow.</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="app__trending">
           {hooks.map((hook, i) => (
-            <div
-              key={hook.id}
-              className="group relative rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 hover:border-zinc-600 hover:bg-zinc-900 transition-all"
-            >
-              {/* Rank */}
-              <div className="absolute -left-2 top-4 flex h-5 w-5 items-center justify-center rounded-full bg-zinc-800 text-xs font-bold text-zinc-500">
-                {i + 1}
-              </div>
-
-              <div className="pl-4">
-                <p className="mb-3 pr-10 text-sm font-medium leading-relaxed text-zinc-100">{hook.text}</p>
-
-                {/* Score bar */}
-                <div className="mb-3 h-1 w-full rounded-full bg-zinc-800">
-                  <div
-                    className={cn('h-1 rounded-full', hook.score >= 88 ? 'bg-emerald-500' : hook.score >= 75 ? 'bg-yellow-500' : 'bg-zinc-600')}
-                    style={{ width: `${hook.score}%` }}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <span className={cn(
-                      'inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium',
-                      TYPE_COLORS[hook.hookType] || 'bg-zinc-800 text-zinc-300 border-zinc-700'
-                    )}>
-                      {hook.hookType.replace('_', ' ')}
-                    </span>
-                    <span className="inline-flex items-center gap-1 rounded-full border border-zinc-700 bg-zinc-800 px-2 py-0.5 text-xs text-zinc-400">
-                      {SOURCE_ICONS[hook.sourceType] || '•'} {hook.platform}
-                    </span>
-                    {hook.viewCount && (
-                      <span className="text-xs text-zinc-600">
-                        {hook.viewCount >= 1000000
-                          ? `${(hook.viewCount / 1000000).toFixed(1)}M views`
-                          : `${(hook.viewCount / 1000).toFixed(0)}k`}
-                      </span>
+            <div key={hook.id} className="trend-row">
+              <span className="trend-row__rank">{i + 1}</span>
+              <div className="trend-row__body">
+                <p className="trend-row__text">{hook.text}</p>
+                <ScoreMeter score={hook.score} showPill={false} />
+                <div className="trend-row__foot">
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <TypeBadge type={hook.hookType} />
+                    <PlatformBadge platform={hook.platform} glyph={SOURCE_ICONS[hook.sourceType]} />
+                    {formatViews(hook.viewCount) && (
+                      <span style={{ fontSize: 12, color: 'var(--text-faint)' }}>{formatViews(hook.viewCount)}</span>
                     )}
                   </div>
-
-                  <div className="flex items-center gap-1.5">
-                    <div className="flex items-center gap-1 text-xs text-zinc-500">
-                      <Zap className="h-3 w-3 text-yellow-500" />{hook.score}
-                    </div>
-                    <button
-                      onClick={() => copy(hook)}
-                      className="flex items-center gap-1 rounded-lg bg-zinc-800 px-2.5 py-1 text-xs text-zinc-400 hover:bg-zinc-700 hover:text-zinc-200 transition-colors"
-                    >
-                      {copiedId === hook.id ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span className="trend-row__score"><Bolt size={12} /> {hook.score}</span>
+                    <button className="hg-copy" data-copied={copiedId === hook.id} onClick={() => copy(hook)}>
+                      {copiedId === hook.id ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
                       Copy
                     </button>
                   </div>
                 </div>
-
-                {hook.explanation && (
-                  <p className="mt-2 text-xs text-zinc-600 italic">{hook.explanation}</p>
-                )}
+                {hook.explanation && <p className="hg-hook__why">{hook.explanation}</p>}
               </div>
             </div>
           ))}
