@@ -2,22 +2,22 @@
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { User as UserIcon, AlertTriangle, Save } from 'lucide-react';
-import { AppNav } from '@/components/AppNav';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Bolt } from '@/components/ui/icons';
 import { useToast } from '@/components/ui/toast';
+import { useStudio } from '@/components/studio/StudioProvider';
 import { api } from '@/lib/api';
-import { fetchCurrentUser } from '@/lib/auth';
 import type { User as UserType } from '@/lib/api';
 import Link from 'next/link';
 
 export default function SettingsPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [userData, setUserData] = useState<UserType | null>(null);
-  const [name, setName] = useState('');
+  const { user } = useStudio();
+  const [userData, setUserData] = useState<UserType | null>(user);
+  const [name, setName] = useState(user?.name ?? '');
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -27,21 +27,18 @@ export default function SettingsPage() {
     if (initialized.current) return;
     initialized.current = true;
 
-    fetchCurrentUser().then(u => {
-      if (!u) { router.push('/login'); return; }
-      // Fetch full user data (includes hooksGenerated)
-      api.user.me().then(full => {
-        setUserData(full);
-        setName(full.name ?? '');
-        setLoading(false);
-      }).catch(() => {
-        // Fallback to auth.me data
-        setUserData(u);
-        setName(u.name ?? '');
-        setLoading(false);
-      });
+    // Auth is already gated by the Studio layout; fetch the full user record
+    // (includes hooksGenerated), falling back to the user already in context.
+    api.user.me().then(full => {
+      setUserData(full);
+      setName(full.name ?? '');
+      setLoading(false);
+    }).catch(() => {
+      setUserData(user);
+      setName(user?.name ?? '');
+      setLoading(false);
     });
-  }, [router]);
+  }, [user]);
 
   const handleSaveName = async () => {
     if (!userData) return;
@@ -96,9 +93,7 @@ export default function SettingsPage() {
   const isPro = userData?.plan === 'PRO';
 
   return (
-    <div>
-      <AppNav />
-      <main className="page">
+    <main className="page">
         <div className="page__head">
           <h1 className="page__title">Settings</h1>
           <p className="page__sub">Manage your account preferences</p>
@@ -201,7 +196,6 @@ export default function SettingsPage() {
             </Button>
           </div>
         </section>
-      </main>
-    </div>
+    </main>
   );
 }

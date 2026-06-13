@@ -46,6 +46,19 @@ export const api = {
       return apiFetch<TrendingResponse>(`/api/hooks/trending?${q}`);
     },
   },
+  boards: {
+    list: () => apiFetch<{ boards: BoardSummary[] }>('/api/boards'),
+    create: (body: { name: string; color?: string }) =>
+      apiFetch<BoardSummary>('/api/boards', { method: 'POST', body: JSON.stringify(body) }),
+    get: (id: string) => apiFetch<BoardDetail>(`/api/boards/${id}`),
+    update: (id: string, body: { name?: string; color?: string }) =>
+      apiFetch<void>(`/api/boards/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
+    delete: (id: string) => apiFetch<void>(`/api/boards/${id}`, { method: 'DELETE' }),
+    addHook: (id: string, body: SaveHookInput) =>
+      apiFetch<BoardHook>(`/api/boards/${id}/hooks`, { method: 'POST', body: JSON.stringify(body) }),
+    removeHook: (id: string, hookId: string) =>
+      apiFetch<void>(`/api/boards/${id}/hooks/${hookId}`, { method: 'DELETE' }),
+  },
   billing: {
     createCheckout: () => apiFetch<{ url: string }>('/api/billing/create-checkout', { method: 'POST' }),
     createPortal: () => apiFetch<{ url: string }>('/api/billing/create-portal', { method: 'POST' }),
@@ -64,3 +77,7 @@ export interface GeneratedHook { id?: string; text: string; type: string; score:
 export interface HistoryResponse { items: GeneratedHook[]; total: number; page: number; pages: number; }
 export interface TrendingHook { id: string; text: string; platform: string; hookType: string; score: number; niche: string | null; sourceType: string; explanation: string; viewCount: number | null; }
 export interface TrendingResponse { hooks: TrendingHook[]; total: number; planLimit: number | null; isPro: boolean; }
+export interface BoardSummary { id: string; name: string; color: string; hookCount: number; preview: string[]; updatedAt: string; }
+export interface BoardHook { id: string; text: string; type: string; platform: string; score: number; niche: string | null; sourceHandle: string | null; sourceViews: string | null; createdAt: string; }
+export interface BoardDetail { board: { id: string; name: string; color: string; createdAt: string; updatedAt: string }; hooks: BoardHook[]; }
+export interface SaveHookInput { text: string; hookType: string; platform: string; score: number; niche?: string; sourceHandle?: string; sourceViews?: string; }

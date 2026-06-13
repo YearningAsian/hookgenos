@@ -117,7 +117,7 @@ export function SiteNav() {
 
         <div className="site-nav__cta">
           {user ? (
-            <Link href="/dashboard"><Button variant="cta" size="sm"><Bolt size={14} /> Dashboard</Button></Link>
+            <Link href="/dashboard"><Button variant="cta" size="sm"><Bolt size={14} /> Open Studio</Button></Link>
           ) : (
             <>
               <Link href="/login"><Button variant="ghost" size="sm">Sign in</Button></Link>
@@ -152,7 +152,7 @@ export function SiteNav() {
           </a>
           <div className="site-menu__actions">
             {user ? (
-              <Link href="/dashboard" onClick={() => setMenuOpen(false)}><Button variant="cta" className="w-full"><Bolt size={15} /> Dashboard</Button></Link>
+              <Link href="/dashboard" onClick={() => setMenuOpen(false)}><Button variant="cta" className="w-full"><Bolt size={15} /> Open Studio</Button></Link>
             ) : (
               <>
                 <Link href="/login" onClick={() => setMenuOpen(false)}><Button variant="outline" className="w-full">Sign in</Button></Link>
