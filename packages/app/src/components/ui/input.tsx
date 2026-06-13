@@ -1,18 +1,20 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
+export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  /** Visual size — `lg` matches the hero/composer field. */
+  inputSize?: 'md' | 'lg';
+}
 
-const Input = React.forwardRef<HTMLInputElement, InputProps>(({ className, type, ...props }, ref) => (
+/** Input — text field that snaps to a purple focus ring (.hg-input). */
+const Input = React.forwardRef<HTMLInputElement, InputProps>(({ className, type, inputSize = 'md', ...props }, ref) => (
   <input
     type={type}
-    className={cn(
-      'flex h-10 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50 transition-colors',
-      className
-    )}
+    className={cn('hg-input', inputSize === 'lg' && 'hg-input--lg', className)}
     ref={ref}
     {...props}
   />
 ));
 Input.displayName = 'Input';
+
 export { Input };
